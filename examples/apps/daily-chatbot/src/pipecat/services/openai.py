@@ -31,7 +31,6 @@ from pipecat.processors.aggregators.openai_llm_context import (
 )
 from pipecat.processors.frame_processor import FrameDirection
 from pipecat.services.ai_services import LLMService, ImageGenService
-from pipecat.decorators.trace import trace_frame_processor
 
 from loguru import logger
 
@@ -50,7 +49,6 @@ except ModuleNotFoundError as e:
     raise Exception(f"Missing module: {e}")
 
 
-@trace_frame_processor("simple_chatbot.agent")
 class BaseOpenAILLMService(LLMService):
     """This is the base for all services that use the AsyncOpenAI client.
 

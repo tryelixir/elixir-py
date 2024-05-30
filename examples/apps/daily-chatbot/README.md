@@ -57,10 +57,3 @@ The webhook url should be `{YOUR_NGROK_URL}/twilio`.
 <img src="resources/twilio.png" height="200px">
 
 Then, call the configured number. `(510) 619-2831` is the default number that has been configured with `implicitly-fond-titmouse.ngrok-free.app`.
-
-## Build and test the Docker image
-
-```bash
-docker build -f Dockerfile -t daily-chatbot ../..
-docker run --env-file .env -p 7860:7860 daily-chatbot
-```

@@ -115,7 +115,9 @@ def get_token(room_url: str) -> str:
     return token
 
 
-def check_room_participants(room_name):
+def check_room_participants(room_name, max_time_limit=30):
+    start_time = time.time()  # Start time
+
     while True:
         response = requests.get(
             f"https://{daily_api_path}/rooms/{room_name}/presence",
@@ -128,3 +130,7 @@ def check_room_participants(room_name):
             ):  # Check if there are any participants
                 break
         time.sleep(1)  # Wait for 1 second before checking again
+
+        elapsed_time = time.time() - start_time  # Calculate elapsed time
+        if elapsed_time >= max_time_limit:
+            break
