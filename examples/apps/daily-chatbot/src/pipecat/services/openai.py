@@ -13,6 +13,7 @@ from PIL import Image
 
 from typing import AsyncGenerator, List, Literal
 
+from elixir import Elixir
 from pipecat.frames.frames import (
     ErrorFrame,
     Frame,
@@ -59,9 +60,12 @@ class BaseOpenAILLMService(LLMService):
     calls from the LLM.
     """
 
-    def __init__(self, model: str, api_key=None, base_url=None):
+    def __init__(self, model: str, session_id: str, api_key=None, base_url=None):
         super().__init__()
+        Elixir.set_association_properties({"session_id": session_id})
+
         self._model: str = model
+        self.session_id = session_id
         self._client = self.create_client(api_key=api_key, base_url=base_url)
 
     def create_client(self, api_key=None, base_url=None):

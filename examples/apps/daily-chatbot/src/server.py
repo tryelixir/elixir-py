@@ -38,9 +38,12 @@ if __name__ == "__main__":
 
     config = parser.parse_args()
 
+    elixir_dir = os.path.join(os.path.dirname(__file__), "../../../../elixir")
+
     uvicorn.run(
         "server:app",
         host=config.host,
         port=config.port,
         reload=config.reload,
+        reload_dirs=[elixir_dir],
     )

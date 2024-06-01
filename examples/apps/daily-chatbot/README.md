@@ -13,17 +13,17 @@ And a quick video walkthrough of the code: https://www.loom.com/share/13df196716
 ## Get started
 
 ```python
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-cp env.example .env # and add your credentials
+poetry install
 ```
 
 ## Run the server
 
 ```bash
-python server.py
+# No reload
+poetry run python src/server.py
+
+# Auto-reload
+poetry run python src/server.py --reload
 ```
 
 ## Join the meeting room

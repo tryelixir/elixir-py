@@ -8,8 +8,8 @@ root_router = APIRouter()
 
 @root_router.get("/start")
 async def start_agent():
-    room_url, room_name, room_sip_uri = create_room_with_bot()
-    return RedirectResponse(room_url)
+    room = create_room_with_bot()
+    return RedirectResponse(room.url)
 
 
 @root_router.get("/status/{pid}")

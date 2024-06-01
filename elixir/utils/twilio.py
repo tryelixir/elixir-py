@@ -1,10 +1,13 @@
+from io import BytesIO
+import os
 import re
+from typing import Optional
 import aiohttp
 
-from elixir.collect.s3 import upload_stream_to_s3
+from elixir.api.s3 import upload_stream_to_s3
 
 
-async def _get_account_sid(recording_url: str) -> str | None:
+def _get_account_sid(recording_url: str) -> str | None:
     pattern = r"https://api\.twilio\.com/2010-04-01/Accounts/(AC[a-zA-Z0-9]+)/Recordings/RE[a-zA-Z0-9]+"
     match = re.search(pattern, recording_url)
     if not match:
@@ -32,12 +35,13 @@ async def _get_content_length(url: str, account_sid: str, auth_token: str) -> in
             total_bytes = 0
             async for chunk in response.content.iter_chunked(1024):
                 total_bytes += len(chunk)
-
-    return total_bytes
+            return total_bytes
 
 
 async def upload_twilio_recording(
-    auth_token: str, recording_url: str, presigned_url: str
+    session_id: str,
+    recording_url: str,
+    auth_token: Optional[str] = os.getenv("TWILIO_AUTH_TOKEN"),
 ):
     """
     Uploads a Twilio recording to a specified presigned URL.
@@ -60,9 +64,9 @@ async def upload_twilio_recording(
             f"{recording_url}.mp3?RequestedChannels=2",
             auth=aiohttp.BasicAuth(account_sid, auth_token),
         ) as response:
-            # BUG: This field exists for wav files but not for mp3 files in Twilio's API.
-            # content_length = int(response.headers.get("Content-Length", 0))
-            content_length = await _get_content_length(
-                response.url, account_sid, auth_token
-            )
-            await upload_stream_to_s3(response.content, presigned_url, content_length)
+            # TODO: Figure out if we can use `response.content` directly, though this stream doesn't seem to
+            # provide the entire file contents.
+            content = await response.read()
+            file_stream = BytesIO(content)
+
+            await upload_stream_to_s3(session_id, file_stream)

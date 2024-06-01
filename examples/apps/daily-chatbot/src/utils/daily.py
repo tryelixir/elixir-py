@@ -5,6 +5,7 @@ import urllib
 import requests
 
 from dotenv import load_dotenv
+from typing import NamedTuple
 
 load_dotenv()
 
@@ -13,13 +14,20 @@ daily_api_path = os.getenv("DAILY_API_URL") or "api.daily.co/v1"
 daily_api_key = os.getenv("DAILY_API_KEY")
 
 
-def create_room() -> tuple[str, str, str]:
+class RoomInfo(NamedTuple):
+    id: str
+    url: str
+    name: str
+    sip_uri: str
+
+
+def create_room() -> RoomInfo:
     """
     Helper function to create a Daily room.
     # See: https://docs.daily.co/reference/rest-api/rooms
 
     Returns:
-        tuple: A tuple containing the room URL and room name and room_sip_uri.
+        RoomInfo: An instance of RoomInfo class containing the room URL, room name, and room SIP URI.
 
     Raises:
         Exception: If the request to create the room fails or if the response does not contain the room URL or room name.
@@ -44,14 +52,15 @@ def create_room() -> tuple[str, str, str]:
         raise Exception(f"Unable to create room: {res.text}")
 
     data = res.json()
+    room_id: str = data.get("id")
     room_url: str = data.get("url")
     room_name: str = data.get("name")
     room_sip_uri: str = data.get("config").get("sip_uri").get("endpoint")
 
-    if room_url is None or room_name is None or room_sip_uri is None:
-        raise Exception("Missing room URL or room name in response")
+    if room_id is None or room_url is None or room_name is None or room_sip_uri is None:
+        raise Exception("Missing room properties in response")
 
-    return room_url, room_name, room_sip_uri
+    return RoomInfo(id=room_id, url=room_url, name=room_name, sip_uri=room_sip_uri)
 
 
 def get_name_from_url(room_url: str) -> str:

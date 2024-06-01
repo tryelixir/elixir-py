@@ -1,4 +1,3 @@
-from traceloop.sdk import Traceloop, Instruments
+from traceloop.sdk import Traceloop
 
 Elixir = Traceloop
-Instruments = Instruments
