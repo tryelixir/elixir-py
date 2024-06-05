@@ -8,7 +8,7 @@ load_dotenv()
 
 
 # Initialize aioboto3 client
-def create_s3_client():
+def _create_s3_client():
     session = aioboto3.Session()
     return session.client(
         "s3",
@@ -21,7 +21,7 @@ def create_s3_client():
 
 async def upload_stream_to_s3(session_id: str, stream: IO) -> None:
     """
-    Uploads a stream to an S3 bucket using a presigned URL asynchronously.
+    Uploads a stream to an S3 bucket.
 
     Args:
       session_id (str): The session ID.
@@ -36,5 +36,5 @@ async def upload_stream_to_s3(session_id: str, stream: IO) -> None:
     # TODO: This should be dynamically fetched via the API key
     bucket = "elixir-123456"
 
-    async with create_s3_client() as s3_client:
+    async with _create_s3_client() as s3_client:
         await s3_client.upload_fileobj(stream, bucket, session_id)

@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from elixir.sdk.tracing.tracing import TracerWrapper
+from elixir.tracing.tracing import TracerWrapper
 
 
 @contextmanager

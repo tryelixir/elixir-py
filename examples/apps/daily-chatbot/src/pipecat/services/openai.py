@@ -62,7 +62,6 @@ class BaseOpenAILLMService(LLMService):
 
     def __init__(self, model: str, session_id: str, api_key=None, base_url=None):
         super().__init__()
-        Elixir.set_association_properties({"session_id": session_id})
 
         self._model: str = model
         self.session_id = session_id
@@ -158,6 +157,10 @@ class BaseOpenAILLMService(LLMService):
         #     yield LLMFunctionCallFrame(function_name=function_name, arguments=arguments)
 
     async def process_frame(self, frame: Frame, direction: FrameDirection):
+        # BUG: Ideally, this should be called once in bot.py. However, due to some threading issues,
+        # we need to call it here to ensure that the session_id is set correctly.
+        Elixir.set_association_properties({"session_id": self.session_id})
+
         context = None
         if isinstance(frame, OpenAILLMContextFrame):
             context: OpenAILLMContext = frame.context

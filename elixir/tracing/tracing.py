@@ -14,8 +14,6 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
 )
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider, SpanProcessor
-from opentelemetry.propagators.textmap import TextMapPropagator
-from opentelemetry.propagate import set_global_textmap
 from opentelemetry.sdk.trace.export import (
     SpanExporter,
     SimpleSpanProcessor,
@@ -24,14 +22,13 @@ from opentelemetry.sdk.trace.export import (
 from opentelemetry.trace import get_tracer_provider, ProxyTracerProvider
 from opentelemetry.context import get_value, attach, set_value
 
-from opentelemetry.semconv.ai import SpanAttributes
-from elixir.sdk import Telemetry
-from elixir.sdk.instruments import Instruments
-from elixir.sdk.tracing.content_allow_list import ContentAllowList
-from elixir.sdk.utils import is_notebook
+from elixir import Telemetry
+from elixir.instruments import Instruments
+from elixir.tracing.semconv import ElixirContextValues, SpanAttributes
+from elixir.utils.ipython import is_notebook
 from typing import Dict, Optional, Set
 
-TRACER_NAME = "traceloop.tracer"
+TRACER_NAME = "elixir.tracer"
 EXCLUDED_URLS = """
     iam.cloud.ibm.com,
     dataplatform.cloud.ibm.com,
@@ -41,7 +38,6 @@ EXCLUDED_URLS = """
     api.anthropic.com,
     api.cohere.ai,
     pinecone.io,
-    traceloop.com,
     posthog.com,
     sentry.io,
     bedrock-runtime,
@@ -52,18 +48,15 @@ EXCLUDED_URLS = """
 
 class TracerWrapper(object):
     resource_attributes: dict = {}
-    enable_content_tracing: bool = True
     endpoint: str = None
     headers: Dict[str, str] = {}
 
     def __new__(
         cls,
         disable_batch=False,
-        processor: SpanProcessor = None,
-        propagator: TextMapPropagator = None,
-        exporter: SpanExporter = None,
         should_enrich_metrics: bool = True,
         instruments: Optional[Set[Instruments]] = None,
+        exporter: SpanExporter = None,
     ) -> "TracerWrapper":
         if not hasattr(cls, "instance"):
             obj = cls.instance = super(TracerWrapper, cls).__new__(cls)
@@ -74,50 +67,32 @@ class TracerWrapper(object):
             obj.__tracer_provider: TracerProvider = init_tracer_provider(
                 resource=obj.__resource
             )
-            if processor:
-                Telemetry().capture("tracer:init", {"processor": "custom"})
-                obj.__spans_processor: SpanProcessor = processor
-                obj.__spans_processor_original_on_start = processor.on_start
-            else:
-                if exporter:
-                    Telemetry().capture(
-                        "tracer:init",
-                        {
-                            "exporter": "custom",
-                            "processor": "simple" if disable_batch else "batch",
-                        },
-                    )
-                else:
-                    Telemetry().capture(
-                        "tracer:init",
-                        {
-                            "exporter": TracerWrapper.endpoint,
-                            "processor": "simple" if disable_batch else "batch",
-                        },
-                    )
 
-                obj.__spans_exporter: SpanExporter = (
-                    exporter
-                    if exporter
-                    else init_spans_exporter(
-                        TracerWrapper.endpoint, TracerWrapper.headers
-                    )
+            Telemetry().capture(
+                "tracer:init",
+                {
+                    "exporter": "custom" if exporter else TracerWrapper.endpoint,
+                    "processor": "simple" if disable_batch else "batch",
+                },
+            )
+
+            obj.__spans_exporter: SpanExporter = (
+                exporter
+                if exporter
+                else init_spans_exporter(TracerWrapper.endpoint, TracerWrapper.headers)
+            )
+            if disable_batch or is_notebook():
+                obj.__spans_processor: SpanProcessor = SimpleSpanProcessor(
+                    obj.__spans_exporter
                 )
-                if disable_batch or is_notebook():
-                    obj.__spans_processor: SpanProcessor = SimpleSpanProcessor(
-                        obj.__spans_exporter
-                    )
-                else:
-                    obj.__spans_processor: SpanProcessor = BatchSpanProcessor(
-                        obj.__spans_exporter
-                    )
-                obj.__spans_processor_original_on_start = None
+            else:
+                obj.__spans_processor: SpanProcessor = BatchSpanProcessor(
+                    obj.__spans_exporter
+                )
+            obj.__spans_processor_original_on_start = None
 
             obj.__spans_processor.on_start = obj._span_processor_on_start
             obj.__tracer_provider.add_span_processor(obj.__spans_processor)
-
-            if propagator:
-                set_global_textmap(propagator)
 
             instrument_set = False
             if instruments is None:
@@ -204,26 +179,6 @@ class TracerWrapper(object):
                             print(Fore.RESET)
                         else:
                             instrument_set = True
-                    elif instrument == Instruments.REQUESTS:
-                        if not init_requests_instrumentor():
-                            print(
-                                Fore.RED + "Warning: Requests library does not exist."
-                            )
-                            print(Fore.RESET)
-                        else:
-                            instrument_set = True
-                    elif instrument == Instruments.URLLIB3:
-                        if not init_urllib3_instrumentor():
-                            print(Fore.RED + "Warning: urllib3 library does not exist.")
-                            print(Fore.RESET)
-                        else:
-                            instrument_set = True
-                    elif instrument == Instruments.PYMYSQL:
-                        if not init_pymysql_instrumentor():
-                            print(Fore.RED + "Warning: PyMySQL library does not exist.")
-                            print(Fore.RESET)
-                        else:
-                            instrument_set = True
                     elif instrument == Instruments.BEDROCK:
                         if not init_bedrock_instrumentor(should_enrich_metrics):
                             print(Fore.RED + "Warning: Bedrock library does not exist.")
@@ -270,8 +225,8 @@ class TracerWrapper(object):
                         )
                         print(
                             "Usage:\n"
-                            + "from elixir.sdk.instruments import Instruments\n"
-                            + 'Traceloop.init(app_name="...", instruments=set([Instruments.OPENAI]))'
+                            + "from elixir.instruments import Instruments\n"
+                            + 'Elixir.init(app_name="...", instruments=set([Instruments.OPENAI]))'
                         )
                         print(Fore.RESET)
 
@@ -282,8 +237,6 @@ class TracerWrapper(object):
                 )
                 print(Fore.RESET)
 
-            obj.__content_allow_list = ContentAllowList()
-
             # Force flushes for debug environments (e.g. local development)
             atexit.register(obj.exit_handler)
 
@@ -293,54 +246,20 @@ class TracerWrapper(object):
         self.flush()
 
     def _span_processor_on_start(self, span, parent_context):
-        workflow_name = get_value("workflow_name")
+        workflow_name = get_value(ElixirContextValues.WORKFLOW_NAME)
         if workflow_name is not None:
-            span.set_attribute(SpanAttributes.ELIXIR_WORKFLOW_NAME, workflow_name)
+            span.set_attribute(SpanAttributes.TRACELOOP_WORKFLOW_NAME, workflow_name)
 
-        entity_name = get_value("entity_name")
+        entity_name = get_value(ElixirContextValues.ENTITY_NAME)
         if entity_name is not None:
-            span.set_attribute(SpanAttributes.ELIXIR_ENTITY_NAME, entity_name)
+            span.set_attribute(SpanAttributes.TRACELOOP_ENTITY_NAME, entity_name)
 
-        correlation_id = get_value("correlation_id")
-        if correlation_id is not None:
-            span.set_attribute(SpanAttributes.ELIXIR_CORRELATION_ID, correlation_id)
-
-        association_properties = get_value("association_properties")
+        association_properties = get_value(ElixirContextValues.ASSOCIATION_PROPERTIES)
         if association_properties is not None:
             for key, value in association_properties.items():
                 span.set_attribute(
                     f"{SpanAttributes.ELIXIR_ASSOCIATION_PROPERTIES}.{key}", value
                 )
-
-            if not self.enable_content_tracing:
-                if self.__content_allow_list.is_allowed(association_properties):
-                    attach(set_value("override_enable_content_tracing", True))
-                else:
-                    attach(set_value("override_enable_content_tracing", False))
-
-        if is_llm_span(span):
-            prompt_key = get_value("prompt_key")
-            if prompt_key is not None:
-                span.set_attribute("traceloop.prompt.key", prompt_key)
-
-            prompt_version = get_value("prompt_version")
-            if prompt_version is not None:
-                span.set_attribute("traceloop.prompt.version", prompt_version)
-
-            prompt_version_name = get_value("prompt_version_name")
-            if prompt_version_name is not None:
-                span.set_attribute("traceloop.prompt.version_name", prompt_version_name)
-
-            prompt_version_hash = get_value("prompt_version_hash")
-            if prompt_version_hash is not None:
-                span.set_attribute("traceloop.prompt.version_hash", prompt_version_hash)
-
-            prompt_template_variables = get_value("prompt_template_variables")
-            if prompt_version_hash is not None:
-                for key, value in prompt_template_variables.items():
-                    span.set_attribute(
-                        f"traceloop.prompt.template_variables.{key}", value
-                    )
 
         # Call original on_start method if it exists in custom processor
         if self.__spans_processor_original_on_start:
@@ -349,12 +268,10 @@ class TracerWrapper(object):
     @staticmethod
     def set_static_params(
         resource_attributes: dict,
-        enable_content_tracing: bool,
         endpoint: str,
         headers: Dict[str, str],
     ) -> None:
         TracerWrapper.resource_attributes = resource_attributes
-        TracerWrapper.enable_content_tracing = enable_content_tracing
         TracerWrapper.endpoint = endpoint
         TracerWrapper.headers = headers
 
@@ -368,7 +285,7 @@ class TracerWrapper(object):
 
         print(
             Fore.RED
-            + "Warning: Traceloop not initialized, make sure you call Traceloop.init()"
+            + "Warning: Elixir not initialized, make sure you call Elixir.init()"
         )
         print(Fore.RESET)
         return False
@@ -381,46 +298,28 @@ class TracerWrapper(object):
 
 
 def set_association_properties(properties: dict) -> None:
-    attach(set_value("association_properties", properties))
+    attach(set_value(ElixirContextValues.ASSOCIATION_PROPERTIES, properties))
 
 
 def set_workflow_name(workflow_name: str) -> None:
-    attach(set_value("workflow_name", workflow_name))
+    attach(set_value(ElixirContextValues.WORKFLOW_NAME, workflow_name))
 
 
 def set_entity_name(entity_name: str) -> None:
-    attach(set_value("entity_name", entity_name))
+    attach(set_value(ElixirContextValues.ENTITY_NAME, entity_name))
 
 
 def get_chained_entity_name(entity_name: str) -> str:
-    parent = get_value("entity_name")
+    parent = get_value(ElixirContextValues.ENTITY_NAME)
     if parent is None:
         return entity_name
     else:
         return f"{parent}.{entity_name}"
 
 
-def set_prompt_tracing_context(
-    key: str,
-    version: int,
-    version_name: str,
-    version_hash: str,
-    template_variables: dict,
-) -> None:
-    attach(set_value("prompt_key", key))
-    attach(set_value("prompt_version", version))
-    attach(set_value("prompt_version_name", version_name))
-    attach(set_value("prompt_version_hash", version_hash))
-    attach(set_value("prompt_template_variables", template_variables))
-
-
-def is_llm_span(span) -> bool:
-    return span.attributes.get(SpanAttributes.LLM_REQUEST_TYPE) is not None
-
-
 def init_spans_exporter(api_endpoint: str, headers: Dict[str, str]) -> SpanExporter:
-    if "http" in api_endpoint.lower() or "https" in api_endpoint.lower():
-        return HTTPExporter(endpoint=f"{api_endpoint}/v1/traces", headers=headers)
+    if "http" in api_endpoint.lower():
+        return HTTPExporter(endpoint=f"{api_endpoint}/traces", headers=headers)
     else:
         return GRPCExporter(endpoint=f"{api_endpoint}", headers=headers)
 
@@ -457,9 +356,6 @@ def init_instrumentations(should_enrich_metrics: bool):
     init_llama_index_instrumentor()
     init_milvus_instrumentor()
     init_transformers_instrumentor()
-    init_requests_instrumentor()
-    init_urllib3_instrumentor()
-    init_pymysql_instrumentor()
     init_bedrock_instrumentor(should_enrich_metrics)
     init_replicate_instrumentor()
     init_vertexai_instrumentor()
@@ -701,51 +597,6 @@ def init_milvus_instrumentor():
         return True
     except Exception as e:
         logging.error(f"Error initializing Milvus instrumentor: {e}")
-        Telemetry().log_exception(e)
-        return False
-
-
-def init_requests_instrumentor():
-    try:
-        if importlib.util.find_spec("requests") is not None:
-            from opentelemetry.instrumentation.requests import RequestsInstrumentor
-
-            instrumentor = RequestsInstrumentor()
-            if not instrumentor.is_instrumented_by_opentelemetry:
-                instrumentor.instrument(excluded_urls=EXCLUDED_URLS)
-        return True
-    except Exception as e:
-        logging.error(f"Error initializing Requests instrumentor: {e}")
-        Telemetry().log_exception(e)
-        return False
-
-
-def init_urllib3_instrumentor():
-    try:
-        if importlib.util.find_spec("urllib3") is not None:
-            from opentelemetry.instrumentation.urllib3 import URLLib3Instrumentor
-
-            instrumentor = URLLib3Instrumentor()
-            if not instrumentor.is_instrumented_by_opentelemetry:
-                instrumentor.instrument(excluded_urls=EXCLUDED_URLS)
-        return True
-    except Exception as e:
-        logging.error(f"Error initializing urllib3 instrumentor: {e}")
-        Telemetry().log_exception(e)
-        return False
-
-
-def init_pymysql_instrumentor():
-    try:
-        if importlib.util.find_spec("sqlalchemy") is not None:
-            from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-
-            instrumentor = SQLAlchemyInstrumentor()
-            if not instrumentor.is_instrumented_by_opentelemetry:
-                instrumentor.instrument()
-        return True
-    except Exception as e:
-        logging.error(f"Error initializing SQLAlchemy instrumentor: {e}")
         Telemetry().log_exception(e)
         return False
 

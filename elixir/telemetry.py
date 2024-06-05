@@ -5,17 +5,14 @@ import logging
 import sys
 from posthog import Posthog
 import sentry_sdk
-from elixir.sdk.version import __version__
+from elixir.version import __version__
 
-POSTHOG_API_KEY = "phc_JMTeAfG8OpaPsyHzSBtqquMvko1fmOHcW0gyqLCrF3t"
-SENTRY_INGESTION_ENDPOINT = (
-    "https://b4f74304f2541ee6781edd8c81b0773c@o4505278734663680.ingest.us.sentry.io/"
-    + "4507109322260480"
-)
+POSTHOG_API_KEY = "phc_PF8pQ3r7cyulzSeDLw5lw1ELUOhEgZuw6M01TLKSrHs"
+SENTRY_INGESTION_ENDPOINT = "https://6226c8a517b79437f9f4d707d919266e@o4507353903595520.ingest.us.sentry.io/4507353931251712"
 
 
 class Telemetry:
-    ANON_ID_PATH = str(Path.home() / ".cache" / "traceloop" / "telemetry_anon_id")
+    ANON_ID_PATH = str(Path.home() / ".cache" / "elixir" / "telemetry_anon_id")
     UNKNOWN_ANON_ID = "UNKNOWN"
 
     _sentry: sentry_sdk.Client = None
@@ -25,7 +22,7 @@ class Telemetry:
         if not hasattr(cls, "instance"):
             obj = cls.instance = super(Telemetry, cls).__new__(cls)
             obj._telemetry_enabled = (
-                os.getenv("ELIXIR_TELEMETRY") or "true"
+                os.getenv("ELIXIR_TELEMETRY_ENABLED") or "true"
             ).lower() == "true" and "pytest" not in sys.modules
 
             if obj._telemetry_enabled:
