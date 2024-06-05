@@ -8,7 +8,14 @@ import asyncio
 
 from typing import AsyncIterable, Iterable
 
-from pipecat.frames.frames import CancelFrame, EndFrame, ErrorFrame, Frame, StartFrame, StopTaskFrame
+from pipecat.frames.frames import (
+    CancelFrame,
+    EndFrame,
+    ErrorFrame,
+    Frame,
+    StartFrame,
+    StopTaskFrame,
+)
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.utils.utils import obj_count, obj_id
 
@@ -77,14 +84,18 @@ class PipelineTask:
 
     async def _process_down_queue(self):
         await self._source.process_frame(
-            StartFrame(allow_interruptions=self._allow_interruptions), FrameDirection.DOWNSTREAM)
+            StartFrame(allow_interruptions=self._allow_interruptions),
+            FrameDirection.DOWNSTREAM,
+        )
         running = True
         should_cleanup = True
         while running:
             try:
                 frame = await self._down_queue.get()
                 await self._source.process_frame(frame, FrameDirection.DOWNSTREAM)
-                running = not (isinstance(frame, StopTaskFrame) or isinstance(frame, EndFrame))
+                running = not (
+                    isinstance(frame, StopTaskFrame) or isinstance(frame, EndFrame)
+                )
                 should_cleanup = not isinstance(frame, StopTaskFrame)
                 self._down_queue.task_done()
             except asyncio.CancelledError:

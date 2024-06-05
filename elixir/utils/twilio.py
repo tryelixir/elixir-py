@@ -15,29 +15,6 @@ def _get_account_sid(recording_url: str) -> str | None:
     return match.group(1)
 
 
-async def _get_content_length(url: str, account_sid: str, auth_token: str) -> int:
-    """
-    Retrieves the content length of a given URL using Twilio authentication.
-
-    Args:
-        url (str): The URL to retrieve the content length from.
-        account_sid (str): The Twilio account SID for authentication.
-        auth_token (str): The Twilio authentication token.
-
-    Returns:
-        int: The total content length in bytes.
-    """
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            url,
-            auth=aiohttp.BasicAuth(account_sid, auth_token),
-        ) as response:
-            total_bytes = 0
-            async for chunk in response.content.iter_chunked(1024):
-                total_bytes += len(chunk)
-            return total_bytes
-
-
 async def upload_twilio_recording(
     session_id: str,
     recording_url: str,
