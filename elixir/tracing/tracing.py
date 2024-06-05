@@ -246,13 +246,9 @@ class TracerWrapper(object):
         self.flush()
 
     def _span_processor_on_start(self, span, parent_context):
-        workflow_name = get_value(ElixirContextValues.WORKFLOW_NAME)
-        if workflow_name is not None:
-            span.set_attribute(SpanAttributes.TRACELOOP_WORKFLOW_NAME, workflow_name)
-
         entity_name = get_value(ElixirContextValues.ENTITY_NAME)
         if entity_name is not None:
-            span.set_attribute(SpanAttributes.TRACELOOP_ENTITY_NAME, entity_name)
+            span.set_attribute(SpanAttributes.ELIXIR_ENTITY_NAME, entity_name)
 
         association_properties = get_value(ElixirContextValues.ASSOCIATION_PROPERTIES)
         if association_properties is not None:
@@ -299,10 +295,6 @@ class TracerWrapper(object):
 
 def set_association_properties(properties: dict) -> None:
     attach(set_value(ElixirContextValues.ASSOCIATION_PROPERTIES, properties))
-
-
-def set_workflow_name(workflow_name: str) -> None:
-    attach(set_value(ElixirContextValues.WORKFLOW_NAME, workflow_name))
 
 
 def set_entity_name(entity_name: str) -> None:

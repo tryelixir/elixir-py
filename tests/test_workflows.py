@@ -1,7 +1,7 @@
 import pytest
 import json
 from openai import OpenAI
-from elixir.decorators import workflow, task, aworkflow, atask
+from elixir.decorators import observe, aobserve
 
 
 @pytest.fixture
@@ -11,7 +11,7 @@ def openai_client():
 
 @pytest.mark.vcr
 def test_simple_workflow(exporter, openai_client):
-    @task(name="something_creator")
+    @observe(name="something_creator")
     def create_something(what: str, subject: str):
         completion = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -19,7 +19,7 @@ def test_simple_workflow(exporter, openai_client):
         )
         return completion.choices[0].message.content
 
-    @workflow(name="pirate_joke_generator")
+    @observe(name="pirate_joke_generator")
     def joke_workflow():
         return create_something("joke", subject="OpenTelemetry")
 
@@ -28,8 +28,8 @@ def test_simple_workflow(exporter, openai_client):
     spans = exporter.get_finished_spans()
     assert [span.name for span in spans] == [
         "openai.chat",
-        "something_creator.task",
-        "pirate_joke_generator.workflow",
+        "something_creator",
+        "pirate_joke_generator",
     ]
     open_ai_span = spans[0]
     assert (
@@ -50,7 +50,7 @@ def test_simple_workflow(exporter, openai_client):
 @pytest.mark.vcr
 def test_streaming_workflow(exporter, openai_client):
 
-    @workflow(name="pirate_joke_generator")
+    @observe(name="pirate_joke_generator")
     def joke_workflow():
         response_stream = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -70,12 +70,10 @@ def test_streaming_workflow(exporter, openai_client):
     assert set([span.name for span in spans]) == set(
         [
             "openai.chat",
-            "pirate_joke_generator.workflow",
+            "pirate_joke_generator",
         ]
     )
-    workflow_span = next(
-        span for span in spans if span.name == "pirate_joke_generator.workflow"
-    )
+    workflow_span = next(span for span in spans if span.name == "pirate_joke_generator")
     openai_span = next(span for span in spans if span.name == "openai.chat")
 
     assert openai_span.parent.span_id == workflow_span.context.span_id
@@ -83,31 +81,23 @@ def test_streaming_workflow(exporter, openai_client):
 
 
 def test_unserializable_workflow(exporter):
-    @task(name="unserializable_task")
+    @observe(name="unserializable_task")
     def unserializable_task(obj: object):
         return object()
-
-    # @workflow(name="unserializable_workflow")
-    # def unserializable_workflow(obj: object):
-    #     return unserializable_task(obj)
 
     unserializable_task(object())
 
     spans = exporter.get_finished_spans()
-    assert [span.name for span in spans] == ["unserializable_task.task"]
+    assert [span.name for span in spans] == ["unserializable_task"]
 
 
 @pytest.mark.asyncio
 async def test_unserializable_async_workflow(exporter):
-    @atask(name="unserializable_task")
+    @aobserve(name="unserializable_task")
     async def unserializable_task(obj: object):
         return object()
-
-    # @aworkflow(name="unserializable_workflow")
-    # async def unserializable_workflow(obj: object):
-    #     return await unserializable_task(obj)
 
     await unserializable_task(object())
 
     spans = exporter.get_finished_spans()
-    assert [span.name for span in spans] == ["unserializable_task.task"]
+    assert [span.name for span in spans] == ["unserializable_task"]

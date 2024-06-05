@@ -1,6 +1,6 @@
 import pytest
 from openai import OpenAI
-from elixir.decorators import workflow
+from elixir.decorators import observe
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def test_resource_attributes(exporter, openai_client):
 
 
 def test_instruments(exporter_with_custom_instrumentations):
-    @workflow()
+    @observe()
     def run_workflow():
         pass
 
@@ -34,7 +34,7 @@ def test_instruments(exporter_with_custom_instrumentations):
 
 
 def test_no_metrics(exporter_with_no_metrics):
-    @workflow()
+    @observe()
     def run_workflow():
         pass
 

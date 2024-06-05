@@ -8,36 +8,29 @@ from opentelemetry import context as context_api
 
 from elixir.telemetry import Telemetry
 from elixir.tracing.context_manager import get_tracer
-from elixir.tracing.semconv import ElixirSpanKindValues, SpanAttributes
+from elixir.tracing.semconv import SpanAttributes
 from elixir.tracing.tracing import (
     TracerWrapper,
     set_entity_name,
     get_chained_entity_name,
-    set_workflow_name,
 )
 from elixir.utils.string import camel_to_snake
 
 
-def entity_method(
-    name: Optional[str] = None,
-    elixir_span_kind: Optional[ElixirSpanKindValues] = ElixirSpanKindValues.TASK,
-):
+def entity_method(name: Optional[str] = None):
     def decorate(fn):
         @wraps(fn)
         def wrap(*args, **kwargs):
             if not TracerWrapper.verify_initialized():
                 return fn(*args, **kwargs)
 
-            span_name = _get_span_name(
-                name=name, fn=fn, elixir_span_kind=elixir_span_kind
-            )
+            span_name = _get_span_name(name=name, fn=fn)
 
             with get_tracer() as tracer:
                 span = _create_span(
                     tracer=tracer,
                     span_name=span_name,
                     entity_name=name,
-                    elixir_span_kind=elixir_span_kind,
                     args=args,
                     kwargs=kwargs,
                 )
@@ -57,19 +50,11 @@ def entity_method(
     return decorate
 
 
-def entity_class(
-    name: Optional[str],
-    method_name: str,
-    elixir_span_kind: Optional[ElixirSpanKindValues] = ElixirSpanKindValues.TASK,
-):
+def entity_class(name: Optional[str], method_name: str):
     def decorator(cls):
         task_name = name if name else camel_to_snake(cls.__name__)
         method = getattr(cls, method_name)
-        setattr(
-            cls,
-            method_name,
-            entity_method(name=task_name, elixir_span_kind=elixir_span_kind)(method),
-        )
+        setattr(cls, method_name, entity_method(name=task_name)(method))
         return cls
 
     return decorator
@@ -85,26 +70,20 @@ def _handle_generator(span, fn, args, kwargs):
 # Async Decorators
 
 
-def aentity_method(
-    name: Optional[str] = None,
-    elixir_span_kind: Optional[ElixirSpanKindValues] = ElixirSpanKindValues.TASK,
-):
+def aentity_method(name: Optional[str] = None):
     def decorate(fn):
         @wraps(fn)
         async def wrap(*args, **kwargs):
             if not TracerWrapper.verify_initialized():
                 return await fn(*args, **kwargs)
 
-            span_name = _get_span_name(
-                name=name, fn=fn, elixir_span_kind=elixir_span_kind
-            )
+            span_name = _get_span_name(name=name, fn=fn)
 
             with get_tracer() as tracer:
                 span = _create_span(
                     tracer=tracer,
                     span_name=span_name,
                     entity_name=name,
-                    elixir_span_kind=elixir_span_kind,
                     args=args,
                     kwargs=kwargs,
                 )
@@ -124,19 +103,11 @@ def aentity_method(
     return decorate
 
 
-def aentity_class(
-    name: Optional[str],
-    method_name: str,
-    elixir_span_kind: Optional[ElixirSpanKindValues] = ElixirSpanKindValues.TASK,
-):
+def aentity_class(name: Optional[str], method_name: str):
     def decorator(cls):
         task_name = name if name else camel_to_snake(cls.__name__)
         method = getattr(cls, method_name)
-        setattr(
-            cls,
-            method_name,
-            aentity_method(name=task_name, elixir_span_kind=elixir_span_kind)(method),
-        )
+        setattr(cls, method_name, aentity_method(name=task_name)(method))
         return cls
 
     return decorator
@@ -152,24 +123,14 @@ async def _ahandle_generator(span, fn, args, kwargs):
 # Shared helpers
 
 
-def _get_span_name(
-    name: str, fn: Callable, elixir_span_kind: ElixirSpanKindValues
-) -> str:
-    entity_name = name or fn.__name__
-    if elixir_span_kind in [
-        ElixirSpanKindValues.WORKFLOW,
-        ElixirSpanKindValues.AGENT,
-    ]:
-        set_workflow_name(entity_name)
-    span_name = f"{entity_name}.{elixir_span_kind.value}"
-    return span_name
+def _get_span_name(name: str, fn: Callable) -> str:
+    return name or fn.__name__
 
 
 def _create_span(
     tracer: trace.Tracer,
     span_name: str,
     entity_name: str,
-    elixir_span_kind: ElixirSpanKindValues,
     args: tuple,
     kwargs: dict,
 ) -> trace.Span:
@@ -177,16 +138,9 @@ def _create_span(
     ctx = trace.set_span_in_context(span)
     context_api.attach(ctx)
 
-    if elixir_span_kind in [
-        ElixirSpanKindValues.TASK,
-        ElixirSpanKindValues.TOOL,
-    ]:
-        chained_entity_name = get_chained_entity_name(entity_name)
-        set_entity_name(chained_entity_name)
-    else:
-        chained_entity_name = entity_name
+    chained_entity_name = get_chained_entity_name(entity_name)
+    set_entity_name(chained_entity_name)
 
-    span.set_attribute(SpanAttributes.ELIXIR_SPAN_KIND, elixir_span_kind.value)
     span.set_attribute(SpanAttributes.ELIXIR_ENTITY_NAME, chained_entity_name)
 
     try:
