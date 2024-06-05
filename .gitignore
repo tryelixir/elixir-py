@@ -1,6 +1,11 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.pytest_cache/
+.DS_Store
 
 # Environments
 .env
 .venv
+
+# Build
+dist
