@@ -53,7 +53,7 @@ def mock_once_instances():
         yield
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def mock_is_instrumented():
     from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 
@@ -64,7 +64,7 @@ def mock_is_instrumented():
         yield
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="function")
 def reset_otel_context():
     from opentelemetry.context import Context, attach, detach
 
