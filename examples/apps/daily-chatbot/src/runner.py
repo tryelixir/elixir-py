@@ -47,7 +47,7 @@ def configure():
     expiration: float = time.time() + 60 * 60
 
     res: requests.Response = requests.post(
-        f"https://api.daily.co/v1/meeting-tokens",
+        "https://api.daily.co/v1/meeting-tokens",
         headers={"Authorization": f"Bearer {key}"},
         json={
             "properties": {"room_name": room_name, "is_owner": True, "exp": expiration}

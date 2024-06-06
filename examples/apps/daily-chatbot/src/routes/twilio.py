@@ -23,7 +23,7 @@ async def handle_twilio_call(
     dial = Dial(
         record="record-from-answer",
         recording_status_callback_method="POST",
-        recording_status_callback=f"/twilio/recording",
+        recording_status_callback="/twilio/recording",
     )
     dial.sip(room.sip_uri)
     response.append(dial)

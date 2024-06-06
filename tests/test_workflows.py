@@ -1,12 +1,6 @@
 import pytest
 import json
-from openai import OpenAI
 from elixir.decorators import observe, aobserve
-
-
-@pytest.fixture
-def openai_client():
-    return OpenAI()
 
 
 @pytest.mark.vcr

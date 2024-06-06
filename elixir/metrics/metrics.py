@@ -6,6 +6,7 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
     PeriodicExportingMetricReader,
     MetricExporter,
+    MetricReader,
 )
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
     OTLPMetricExporter as GRPCExporter,
@@ -23,22 +24,18 @@ class MetricsWrapper(object):
     # if it needs headers?
     headers: Dict[str, str] = {}
 
-    def __new__(cls, exporter: MetricExporter = None) -> "MetricsWrapper":
+    def __new__(cls, reader: MetricReader = None) -> "MetricsWrapper":
         if not hasattr(cls, "instance"):
             obj = cls.instance = super(MetricsWrapper, cls).__new__(cls)
             if not MetricsWrapper.endpoint:
                 return obj
 
-            obj.__metrics_exporter: MetricExporter = (
-                exporter
-                if exporter
-                else init_metrics_exporter(
-                    MetricsWrapper.endpoint, MetricsWrapper.headers
-                )
+            obj.__metrics_exporter: MetricExporter = init_metrics_exporter(
+                MetricsWrapper.endpoint, MetricsWrapper.headers
             )
 
             obj.__metrics_provider: MeterProvider = init_metrics_provider(
-                obj.__metrics_exporter, MetricsWrapper.resource_attributes
+                obj.__metrics_exporter, reader, MetricsWrapper.resource_attributes
             )
 
         return cls.instance
@@ -62,16 +59,22 @@ def init_metrics_exporter(endpoint: str, headers: Dict[str, str]) -> MetricExpor
 
 
 def init_metrics_provider(
-    exporter: MetricExporter, resource_attributes: dict = None
+    exporter: MetricExporter,
+    reader: MetricReader = None,
+    resource_attributes: dict = None,
 ) -> MeterProvider:
     resource = (
         Resource.create(resource_attributes)
         if resource_attributes
         else Resource.create()
     )
-    reader = PeriodicExportingMetricReader(exporter)
+    metric_reader = (
+        reader
+        if reader
+        else PeriodicExportingMetricReader(exporter, export_interval_millis=1000)
+    )
     provider = MeterProvider(
-        metric_readers=[reader],
+        metric_readers=[metric_reader],
         resource=resource,
         views=metric_views(),
     )
