@@ -2,17 +2,12 @@
 
 import os
 from unittest.mock import PropertyMock, patch
-from openai import OpenAI
 import pytest
 from elixir import Elixir
 from elixir.instruments import Instruments
-from elixir.metrics.metrics import MetricsWrapper
-from elixir.tracing.tracing import TracerWrapper
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader
 from opentelemetry.trace import set_tracer_provider
-from opentelemetry.util._once import Once
-from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 
 
 class OTelReceivers:
@@ -23,6 +18,8 @@ class OTelReceivers:
 
 @pytest.fixture
 def openai_client():
+    from openai import OpenAI
+
     return OpenAI()
 
 
@@ -43,6 +40,8 @@ def vcr_config():
 
 @pytest.fixture(autouse=True, scope="session")
 def mock_once_instances():
+    from opentelemetry.util._once import Once
+
     original_do_once = Once.do_once
 
     def new_do_once(self, func):
@@ -56,6 +55,8 @@ def mock_once_instances():
 
 @pytest.fixture(autouse=True)
 def mock_is_instrumented():
+    from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
+
     with patch.object(
         BaseInstrumentor, "_is_instrumented_by_opentelemetry", new_callable=PropertyMock
     ) as mock_property:
@@ -63,8 +64,23 @@ def mock_is_instrumented():
         yield
 
 
+@pytest.fixture(autouse=True)
+def reset_otel_context():
+    from opentelemetry.context import Context, attach, detach
+
+    context = Context()
+    token = attach(context)
+
+    yield
+
+    detach(token)
+
+
 @pytest.fixture(autouse=True, scope="function")
 def manage_singletons():
+    from elixir.metrics.metrics import MetricsWrapper
+    from elixir.tracing.tracing import TracerWrapper
+
     os.environ["ELIXIR_METRICS_ENABLED"] = "true"
     os.environ["ELIXIR_TRACE_ENABLED"] = "true"
 
