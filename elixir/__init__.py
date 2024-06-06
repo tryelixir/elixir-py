@@ -5,7 +5,7 @@ from typing import Optional, Set
 from colorama import Fore
 from opentelemetry.sdk.resources import SERVICE_NAME
 from opentelemetry.sdk.trace.export import SpanExporter
-from opentelemetry.sdk.metrics.export import MetricExporter
+from opentelemetry.sdk.metrics.export import MetricReader
 
 from elixir.config.constants import ELIXIR_COLLECTOR_URL
 from elixir.metrics.metrics import MetricsWrapper
@@ -36,7 +36,7 @@ class Elixir:
         resource_attributes: dict = {},
         instruments: Optional[Set[Instruments]] = None,
         _test_exporter: SpanExporter = None,
-        _test_metrics_exporter: MetricExporter = None,
+        _test_metrics_reader: MetricReader = None,
     ) -> None:
         Telemetry()
 
@@ -73,7 +73,7 @@ class Elixir:
                 resource_attributes, api_endpoint, metrics_headers
             )
 
-            Elixir.__metrics_wrapper = MetricsWrapper(exporter=_test_metrics_exporter)
+            Elixir.__metrics_wrapper = MetricsWrapper(reader=_test_metrics_reader)
 
     def set_association_properties(properties: dict) -> None:
         set_association_properties(properties)
