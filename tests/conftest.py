@@ -1,16 +1,24 @@
 """Unit tests configuration module."""
 
 import os
+from unittest.mock import PropertyMock, patch
 from openai import OpenAI
 import pytest
 from elixir import Elixir
 from elixir.instruments import Instruments
+from elixir.metrics.metrics import MetricsWrapper
 from elixir.tracing.tracing import TracerWrapper
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+from opentelemetry.trace import set_tracer_provider
+from opentelemetry.util._once import Once
+from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 
-from tests.utils.in_memory_metrics_exporter import InMemoryMetricExporter
 
-pytest_plugins = []
+class OTelReceivers:
+    def __init__(self):
+        self.exporter = InMemorySpanExporter()
+        self.metrics_reader = InMemoryMetricReader()
 
 
 @pytest.fixture
@@ -33,72 +41,89 @@ def vcr_config():
     }
 
 
+@pytest.fixture(autouse=True, scope="session")
+def mock_once_instances():
+    original_do_once = Once.do_once
+
+    def new_do_once(self, func):
+        with self._lock:
+            self._done = False
+        return original_do_once(self, func)
+
+    with patch.object(Once, "do_once", new_do_once):
+        yield
+
+
 @pytest.fixture(autouse=True)
-def clear_exporter(exporter):
-    exporter.clear()
+def mock_is_instrumented():
+    with patch.object(
+        BaseInstrumentor, "_is_instrumented_by_opentelemetry", new_callable=PropertyMock
+    ) as mock_property:
+        mock_property.return_value = False
+        yield
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True, scope="function")
+def manage_singletons():
+    os.environ["ELIXIR_METRICS_ENABLED"] = "true"
+    os.environ["ELIXIR_TRACE_ENABLED"] = "true"
+
+    # Clear singletons before each test
+    if hasattr(TracerWrapper, "instance"):
+        del TracerWrapper.instance
+    if hasattr(MetricsWrapper, "instance"):
+        del MetricsWrapper.instance
+
+    set_tracer_provider(None)
+
+    yield
+
+
+@pytest.fixture(scope="function")
+def metrics_reader():
+    receivers = OTelReceivers()
+    Elixir.init(
+        disable_batch=True,
+        _test_exporter=receivers.exporter,
+        _test_metrics_reader=receivers.metrics_reader,
+    )
+    return receivers.metrics_reader
+
+
+@pytest.fixture(scope="function")
 def exporter():
-    exporter = InMemorySpanExporter()
-    metrics_exporter = InMemoryMetricExporter()
-
+    receivers = OTelReceivers()
     Elixir.init(
         app_name="test",
         resource_attributes={"something": "yes"},
         disable_batch=True,
-        _test_exporter=exporter,
-        _test_metrics_exporter=metrics_exporter,
+        _test_exporter=receivers.exporter,
+        _test_metrics_reader=receivers.metrics_reader,
     )
+    return receivers.exporter
 
-    return exporter
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def exporter_with_custom_instrumentations():
-    # Clear singleton if existed
-    if hasattr(TracerWrapper, "instance"):
-        _trace_wrapper_instance = TracerWrapper.instance
-        del TracerWrapper.instance
-
-    exporter = InMemorySpanExporter()
-    metrics_exporter = InMemoryMetricExporter()
-
+    receivers = OTelReceivers()
     Elixir.init(
-        _test_exporter=exporter,
-        _test_metrics_exporter=metrics_exporter,
         disable_batch=True,
         instruments=[i for i in Instruments],
+        _test_exporter=receivers.exporter,
+        _test_metrics_reader=receivers.metrics_reader,
     )
-
-    yield exporter
-
-    # Restore singleton if any
-    if _trace_wrapper_instance:
-        TracerWrapper.instance = _trace_wrapper_instance
+    return receivers.exporter
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def exporter_with_no_metrics():
-    # Clear singleton if existed
-    if hasattr(TracerWrapper, "instance"):
-        _trace_wrapper_instance = TracerWrapper.instance
-        del TracerWrapper.instance
-
     os.environ["ELIXIR_METRICS_ENABLED"] = "false"
 
-    exporter = InMemorySpanExporter()
-    metrics_exporter = InMemoryMetricExporter()
-
+    receivers = OTelReceivers()
     Elixir.init(
-        _test_exporter=exporter,
-        _test_metrics_exporter=metrics_exporter,
         disable_batch=True,
+        instruments=[i for i in Instruments],
+        _test_exporter=receivers.exporter,
+        _test_metrics_reader=receivers.metrics_reader,
     )
-
-    yield exporter
-
-    # Restore singleton if any
-    if _trace_wrapper_instance:
-        TracerWrapper.instance = _trace_wrapper_instance
-        os.environ["ELIXIR_METRICS_ENABLED"] = "true"
+    return receivers.exporter

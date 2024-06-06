@@ -2,7 +2,6 @@ import pytest
 from elixir.decorators import observe
 
 
-@pytest.mark.vcr
 def test_nested_tasks(exporter):
     @observe(name="some_workflow")
     def some_workflow():
