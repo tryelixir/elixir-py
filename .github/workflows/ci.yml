@@ -3,7 +3,32 @@ name: Lint and Test
 on: pull_request
 
 jobs:
-  build:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Lint with flake8
+        run: |
+          poetry run flake8 .
+
+  test:
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -24,10 +49,6 @@ jobs:
 
       - name: Set environment variable
         run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
-
-      - name: Lint with flake8
-        run: |
-          poetry run flake8 .
 
       - name: Test with pytest
         run: |
