@@ -17,11 +17,14 @@ from pipecat.frames.frames import (
     LLMFullResponseStartFrame,
     LLMResponseStartFrame,
     LLMResponseEndFrame,
-    LLMFullResponseEndFrame
+    LLMFullResponseEndFrame,
 )
 from pipecat.processors.frame_processor import FrameDirection
 from pipecat.services.ai_services import LLMService
-from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext, OpenAILLMContextFrame
+from pipecat.processors.aggregators.openai_llm_context import (
+    OpenAILLMContext,
+    OpenAILLMContextFrame,
+)
 
 from loguru import logger
 
@@ -30,7 +33,8 @@ try:
 except ModuleNotFoundError as e:
     logger.error(f"Exception: {e}")
     logger.error(
-        "In order to use Anthropic, you need to `pip install pipecat-ai[anthropic]`. Also, set `ANTHROPIC_API_KEY` environment variable.")
+        "In order to use Anthropic, you need to `pip install pipecat-ai[anthropic]`. Also, set `ANTHROPIC_API_KEY` environment variable."
+    )
     raise Exception(f"Missing module: {e}")
 
 
@@ -43,17 +47,17 @@ class AnthropicLLMService(LLMService):
     """
 
     def __init__(
-            self,
-            api_key: str,
-            model: str = "claude-3-opus-20240229",
-            max_tokens: int = 1024):
+        self,
+        api_key: str,
+        model: str = "claude-3-opus-20240229",
+        max_tokens: int = 1024,
+    ):
         super().__init__()
         self._client = AsyncAnthropic(api_key=api_key)
         self._model = model
         self._max_tokens = max_tokens
 
-    def _get_messages_from_openai_context(
-            self, context: OpenAILLMContext):
+    def _get_messages_from_openai_context(self, context: OpenAILLMContext):
         openai_messages = context.get_messages()
         anthropic_messages = []
 
@@ -64,24 +68,28 @@ class AnthropicLLMService(LLMService):
                 role = "user"
             if message.get("mime_type") == "image/jpeg":
                 # vision frame
-                encoded_image = base64.b64encode(message["data"].getvalue()).decode("utf-8")
-                anthropic_messages.append({
-                    "role": role,
-                    "content": [{
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": message.get("mime_type"),
-                            "data": encoded_image,
-                        }
-                    }, {
-                        "type": "text",
-                        "text": text
-                    }]
-                })
+                encoded_image = base64.b64encode(message["data"].getvalue()).decode(
+                    "utf-8"
+                )
+                anthropic_messages.append(
+                    {
+                        "role": role,
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": message.get("mime_type"),
+                                    "data": encoded_image,
+                                },
+                            },
+                            {"type": "text", "text": text},
+                        ],
+                    }
+                )
             else:
                 # text frame
-                anthropic_messages.append({"role": role, "content": content})
+                anthropic_messages.append({"role": role, "content": text})
 
         return anthropic_messages
 
@@ -97,11 +105,12 @@ class AnthropicLLMService(LLMService):
                 messages=messages,
                 model=self._model,
                 max_tokens=self._max_tokens,
-                stream=True)
+                stream=True,
+            )
             logger.debug(f"Anthropic LLM TTFB: {time.time() - start_time}")
             async for event in response:
                 # logger.debug(f"Anthropic LLM event: {event}")
-                if (event.type == "content_block_delta"):
+                if event.type == "content_block_delta":
                     await self.push_frame(LLMResponseStartFrame())
                     await self.push_frame(TextFrame(event.delta.text))
                     await self.push_frame(LLMResponseEndFrame())

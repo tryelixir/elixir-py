@@ -1,4 +1,3 @@
-from enum import Enum
 from opentelemetry.semconv.ai import SpanAttributes as BaseSpanAttributes
 
 

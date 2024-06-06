@@ -1,4 +1,3 @@
-import os
 import subprocess
 from typing import Optional
 from fastapi import HTTPException
@@ -20,7 +19,7 @@ def cleanup_bots():
 
 
 def create_room_with_bot(session_id: Optional[str] = None) -> RoomInfo:
-    print(f"!!! Creating room")
+    print("!!! Creating room")
     room = create_room()
     print(f"!!! Room URL: {room.url}")
     # Ensure the room property is present

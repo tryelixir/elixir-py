@@ -1,5 +1,4 @@
 import pytest
-from openai import OpenAI
 from elixir import Elixir
 from elixir.decorators import observe
 

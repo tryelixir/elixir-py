@@ -1,6 +1,5 @@
 import pytest
 import json
-from openai import OpenAI
 from elixir.decorators import observe, aobserve
 
 
