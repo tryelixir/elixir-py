@@ -4,11 +4,6 @@ from openai import OpenAI
 from elixir.decorators import observe, aobserve
 
 
-@pytest.fixture
-def openai_client():
-    return OpenAI()
-
-
 @pytest.mark.vcr
 def test_simple_workflow(exporter, openai_client):
     @observe(name="something_creator")

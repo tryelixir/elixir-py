@@ -1,6 +1,7 @@
 """Unit tests configuration module."""
 
 import os
+from openai import OpenAI
 import pytest
 from elixir import Elixir
 from elixir.instruments import Instruments
@@ -12,23 +13,9 @@ from tests.utils.in_memory_metrics_exporter import InMemoryMetricExporter
 pytest_plugins = []
 
 
-@pytest.fixture(scope="session")
-def exporter():
-    exporter = InMemorySpanExporter()
-    metrics_exporter = InMemoryMetricExporter()
-    Elixir.init(
-        app_name="test",
-        resource_attributes={"something": "yes"},
-        disable_batch=True,
-        _test_exporter=exporter,
-        _test_metrics_exporter=metrics_exporter,
-    )
-    return exporter
-
-
-@pytest.fixture(autouse=True)
-def clear_exporter(exporter):
-    exporter.clear()
+@pytest.fixture
+def openai_client():
+    return OpenAI()
 
 
 @pytest.fixture(autouse=True)
@@ -46,7 +33,28 @@ def vcr_config():
     }
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
+def clear_exporter(exporter):
+    exporter.clear()
+
+
+@pytest.fixture(scope="session")
+def exporter():
+    exporter = InMemorySpanExporter()
+    metrics_exporter = InMemoryMetricExporter()
+
+    Elixir.init(
+        app_name="test",
+        resource_attributes={"something": "yes"},
+        disable_batch=True,
+        _test_exporter=exporter,
+        _test_metrics_exporter=metrics_exporter,
+    )
+
+    return exporter
+
+
+@pytest.fixture(scope="session")
 def exporter_with_custom_instrumentations():
     # Clear singleton if existed
     if hasattr(TracerWrapper, "instance"):
@@ -55,6 +63,7 @@ def exporter_with_custom_instrumentations():
 
     exporter = InMemorySpanExporter()
     metrics_exporter = InMemoryMetricExporter()
+
     Elixir.init(
         _test_exporter=exporter,
         _test_metrics_exporter=metrics_exporter,
@@ -69,7 +78,7 @@ def exporter_with_custom_instrumentations():
         TracerWrapper.instance = _trace_wrapper_instance
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def exporter_with_no_metrics():
     # Clear singleton if existed
     if hasattr(TracerWrapper, "instance"):
@@ -80,6 +89,7 @@ def exporter_with_no_metrics():
 
     exporter = InMemorySpanExporter()
     metrics_exporter = InMemoryMetricExporter()
+
     Elixir.init(
         _test_exporter=exporter,
         _test_metrics_exporter=metrics_exporter,

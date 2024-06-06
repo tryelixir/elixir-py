@@ -3,11 +3,6 @@ from openai import OpenAI
 from elixir.decorators import observe
 
 
-@pytest.fixture
-def openai_client():
-    return OpenAI()
-
-
 @pytest.mark.vcr
 def test_resource_attributes(exporter, openai_client):
     openai_client.chat.completions.create(
