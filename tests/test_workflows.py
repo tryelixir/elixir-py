@@ -23,7 +23,7 @@ def test_simple_workflow(exporter, openai_client):
     assert [span.name for span in spans] == [
         "openai.chat",
         "something_creator",
-        "pirate_joke_generator",
+        "pirate_joke_generator.",
     ]
     open_ai_span = spans[0]
     assert (
