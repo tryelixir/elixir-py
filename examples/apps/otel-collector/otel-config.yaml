@@ -26,12 +26,14 @@ exporters:
   clickhouse:
     endpoint: 'tcp://172.17.0.2:9000'
     database: 'otel_events'
+  file:
+    path: '/file-exporter/telemetry_output.json'
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [debug, logging, clickhouse]
+      exporters: [debug, logging, file]
 
   extensions: [zpages]

@@ -2,19 +2,20 @@ import asyncio
 import aiohttp
 import os
 import sys
+from openai.types.chat import ChatCompletionToolParam
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
-from pipecat.pipeline.task import PipelineTask
+from pipecat.pipeline.task import PipelineTask, PipelineParams
 from pipecat.processors.aggregators.llm_response import (
-    LLMAssistantResponseAggregator,
-    LLMUserResponseAggregator,
+    LLMUserContextAggregator,
+    LLMAssistantContextAggregator,
 )
 from pipecat.frames.frames import (
     LLMMessagesFrame,
 )
 from pipecat.services.elevenlabs import ElevenLabsTTSService
-from pipecat.services.openai import OpenAILLMService
+from pipecat.services.openai import OpenAILLMContext
 from pipecat.transports.services.daily import (
     DailyParams,
     DailyTransport,
@@ -27,6 +28,9 @@ from runner import configure
 from loguru import logger
 
 from dotenv import load_dotenv
+
+from services.pipecat import OpenAILLMService
+from tools.fetch_weather import fetch_weather_from_api, start_fetch_weather
 
 load_dotenv(override=True)
 
@@ -61,7 +65,36 @@ async def main(room_url: str, token: str, session_id: str):
             model="gpt-4-turbo-preview",
             session_id=session_id,
         )
+        llm.register_function(
+            "get_current_weather",
+            fetch_weather_from_api,
+            start_callback=start_fetch_weather,
+        )
 
+        tools = [
+            ChatCompletionToolParam(
+                type="function",
+                function={
+                    "name": "get_current_weather",
+                    "description": "Get the current weather",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "location": {
+                                "type": "string",
+                                "description": "The city and state, e.g. San Francisco, CA",
+                            },
+                            "format": {
+                                "type": "string",
+                                "enum": ["celsius", "fahrenheit"],
+                                "description": "The temperature unit to use. Infer this from the users location.",
+                            },
+                        },
+                        "required": ["location", "format"],
+                    },
+                },
+            )
+        ]
         messages = [
             {
                 "role": "system",
@@ -69,8 +102,9 @@ async def main(room_url: str, token: str, session_id: str):
             },
         ]
 
-        tma_in = LLMUserResponseAggregator(messages)
-        tma_out = LLMAssistantResponseAggregator(messages)
+        context = OpenAILLMContext(messages, tools)
+        tma_in = LLMUserContextAggregator(context)
+        tma_out = LLMAssistantContextAggregator(context)
 
         pipeline = Pipeline(
             [
@@ -83,7 +117,7 @@ async def main(room_url: str, token: str, session_id: str):
             ]
         )
 
-        task = PipelineTask(pipeline, allow_interruptions=True)
+        task = PipelineTask(pipeline, PipelineParams(allow_interruptions=True))
 
         @transport.event_handler("on_first_participant_joined")
         async def on_first_participant_joined(transport, participant):
