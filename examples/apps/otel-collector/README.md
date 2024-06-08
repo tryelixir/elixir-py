@@ -2,6 +2,8 @@
 
 ## Clickhouse
 
+You can skip this section if just using the File Exporter.
+
 ### Installation
 
 1. Install Clickhouse:
@@ -25,7 +27,7 @@ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' some
 4. To download the contents of the Clickhouse server, run the following:
 
 ```bash
-docker exec -it 8202a4e8d79e clickhouse-client --query="SELECT * FROM otel_events.otel_traces" --format=CSVWithNames > traces.csv
+docker exec -it {YOUR_DOCKER_CONTAINER_ID} clickhouse-client --query="SELECT * FROM otel_events.otel_traces" --format=CSVWithNames > traces.csv
 ```
 
 ## Otel Collector
@@ -35,6 +37,6 @@ docker exec -it 8202a4e8d79e clickhouse-client --query="SELECT * FROM otel_event
 2. Start the OTel collector:
 
 ```bash
-docker build -f Dockerfile -t otel-collector-clickhouse .
-docker run -p 4317:4317 -p 4318:4318 -p 55679:55679 otel-collector-clickhouse
+docker build -f Dockerfile -t otel-collector .
+docker run -p 4317:4317 -p 4318:4318 -p 55679:55679 otel-collector
 ```
