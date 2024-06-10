@@ -2,7 +2,6 @@ import asyncio
 import aiohttp
 import os
 import sys
-from openai.types.chat import ChatCompletionToolParam
 
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -30,7 +29,7 @@ from loguru import logger
 from dotenv import load_dotenv
 
 from services.pipecat import OpenAILLMService
-from tools.fetch_weather import fetch_weather_from_api, start_fetch_weather
+from tools import tools, functions
 
 load_dotenv(override=True)
 
@@ -65,40 +64,25 @@ async def main(room_url: str, token: str, session_id: str):
             model="gpt-4-turbo-preview",
             session_id=session_id,
         )
-        llm.register_function(
-            "get_current_weather",
-            fetch_weather_from_api,
-            start_callback=start_fetch_weather,
-        )
-
-        tools = [
-            ChatCompletionToolParam(
-                type="function",
-                function={
-                    "name": "get_current_weather",
-                    "description": "Get the current weather",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "location": {
-                                "type": "string",
-                                "description": "The city and state, e.g. San Francisco, CA",
-                            },
-                            "format": {
-                                "type": "string",
-                                "enum": ["celsius", "fahrenheit"],
-                                "description": "The temperature unit to use. Infer this from the users location.",
-                            },
-                        },
-                        "required": ["location", "format"],
-                    },
-                },
+        for function_name, function in functions.items():
+            llm.register_function(
+                function_name,
+                function["callback"],
+                start_callback=function["start_callback"],
             )
-        ]
+
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful LLM in a WebRTC call. Be brief. Your goal is to demonstrate your capabilities in a succinct way. Your output will be converted to audio so don't include special characters in your answers. Respond to what the user said in a creative and helpful way.",
+                "content": """
+                You are a scheduling assistant for a medical clinic. Be concise and keep your introduction brief.
+                You are a voice agent, so produce output in human-readable English without using markdown (lists, asterisks, bullets, etc.).
+
+                Present available times in 12-hour format (AM/PM). 
+                
+                If given document search results, concisely respond with English instead of a bulleted list. You will be punished for regurgitating the entire document.
+                **Example**: "Yes, the clinic supports Anthem Insurance PPO, but not HMO". 
+                """,
             },
         ]
 
