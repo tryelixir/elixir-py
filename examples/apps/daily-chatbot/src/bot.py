@@ -45,7 +45,8 @@ You are a voice agent, so produce output in human-readable English without using
 Present available times in 12-hour format (AM/PM).
 
 If given document search results, concisely respond with English instead of a bulleted list. You will be punished for regurgitating the entire document.
-**Example**: "Yes, the clinic supports Anthem Insurance PPO, but not HMO".
+**Good Example**: Yes, the clinic supports Anthem Insurance PPO, but not HMO.
+**Bad Example**: - **HMO (Health Maintenance Organization)** plans are supported.
 """
 
 
