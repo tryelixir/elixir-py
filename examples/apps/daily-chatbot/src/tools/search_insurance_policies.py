@@ -17,9 +17,7 @@ def get_pinecone_docs(query: str, top_k: int = 5):
     )
 
     # Query Pinecone to retrieve top-k relevant documents
-    response = index.query(
-        vector=query_embedding, top_k=top_k, include_values=True, include_metadata=True
-    )
+    response = index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
 
     # Extract the text of the retrieved documents
     documents = [match["metadata"]["text"] for match in response["matches"]]
