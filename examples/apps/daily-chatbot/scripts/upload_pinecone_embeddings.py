@@ -1,5 +1,5 @@
 import openai
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 import os
 
 # Set your OpenAI API key and Pinecone API key

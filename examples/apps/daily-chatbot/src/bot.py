@@ -38,6 +38,16 @@ logger.add(sys.stderr, level="DEBUG")
 
 Elixir.init(disable_batch=True)
 
+prompt = """
+You are a scheduling assistant for a medical clinic. Be concise and keep your introduction brief.
+You are a voice agent, so produce output in human-readable English without using markdown (lists, asterisks, bullets, etc.).
+
+Present available times in 12-hour format (AM/PM).
+
+If given document search results, concisely respond with English instead of a bulleted list. You will be punished for regurgitating the entire document.
+**Example**: "Yes, the clinic supports Anthem Insurance PPO, but not HMO".
+"""
+
 
 async def main(room_url: str, token: str, session_id: str):
     async with aiohttp.ClientSession() as session:
@@ -74,15 +84,7 @@ async def main(room_url: str, token: str, session_id: str):
         messages = [
             {
                 "role": "system",
-                "content": """
-                You are a scheduling assistant for a medical clinic. Be concise and keep your introduction brief.
-                You are a voice agent, so produce output in human-readable English without using markdown (lists, asterisks, bullets, etc.).
-
-                Present available times in 12-hour format (AM/PM). 
-                
-                If given document search results, concisely respond with English instead of a bulleted list. You will be punished for regurgitating the entire document.
-                **Example**: "Yes, the clinic supports Anthem Insurance PPO, but not HMO". 
-                """,
+                "content": prompt,
             },
         ]
 

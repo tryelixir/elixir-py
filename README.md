@@ -22,6 +22,10 @@ cd elixir-py
 poetry install
 ```
 
+## Setup
+
+If using VSCode, install the `Flake8` and `Black Formatter` extensions.
+
 ## Tests
 
 ```bash
