@@ -1,0 +1,49 @@
+# Supported Insurance Types for Scheduling Doctor's Appointments
+
+## Supported Insurance Plans
+
+1. **United Healthcare**
+   - **HMO (Health Maintenance Organization)**: Yes, United Healthcare HMO plans are supported. Members must use network doctors and hospitals.
+   - **PPO (Preferred Provider Organization)**: Yes, United Healthcare PPO plans are supported. Offers flexibility in choosing healthcare providers.
+
+2. **Blue Cross Blue Shield**
+   - **PPO (Preferred Provider Organization)**: Yes, Blue Cross Blue Shield PPO plans are supported. Provides greater flexibility in choosing healthcare providers.
+   - **EPO (Exclusive Provider Organization)**: Yes, Blue Cross Blue Shield EPO plans are supported. Offers lower premiums with a network of providers.
+
+3. **Aetna**
+   - **PPO (Preferred Provider Organization)**: Yes, Aetna PPO plans are supported. Provides coverage for both in-network and out-of-network providers.
+   - **HMO (Health Maintenance Organization)**: Yes, Aetna HMO plans are supported. Encourages use of network providers to keep costs low.
+
+4. **Cigna**
+   - **PPO (Preferred Provider Organization)**: Yes, Cigna PPO plans are supported. Offers a broad network with flexibility in choosing providers.
+   - **EPO (Exclusive Provider Organization)**: Yes, Cigna EPO plans are supported. Provides affordable options with network-only coverage.
+
+5. **Kaiser Permanente**
+   - **HMO (Health Maintenance Organization)**: Yes, Kaiser Permanente HMO plans are supported. All services provided through Kaiser facilities.
+
+6. **Humana**
+   - **Medicare Advantage Plans**: Yes, Humana Medicare Advantage plans are supported. Includes additional benefits like vision, dental, and wellness programs.
+   - **PPO (Preferred Provider Organization)**: Yes, Humana PPO plans are supported. Offers flexibility with both in-network and out-of-network coverage.
+
+## Not Supported Insurance Plans
+
+1. **United Healthcare**
+   - **EPO (Exclusive Provider Organization)**: No, United Healthcare EPO plans are not supported.
+
+2. **Blue Cross Blue Shield**
+   - **HMO (Health Maintenance Organization)**: No, Blue Cross Blue Shield HMO plans are not supported.
+
+3. **Aetna**
+   - **EPO (Exclusive Provider Organization)**: No, Aetna EPO plans are not supported.
+   - **POS (Point of Service)**: No, Aetna POS plans are not supported.
+
+4. **Cigna**
+   - **HMO (Health Maintenance Organization)**: No, Cigna HMO plans are not supported.
+   - **Open Access Plus**: No, Cigna Open Access Plus plans are not supported.
+
+5. **Kaiser Permanente**
+   - **Medicare Advantage Plans**: No, Kaiser Permanente Medicare Advantage plans are not supported.
+
+6. **Humana**
+   - **HMO (Health Maintenance Organization)**: No, Humana HMO plans are not supported.
+   - **Short-term Health Insurance**: No, Humana Short-term Health Insurance plans are not supported.

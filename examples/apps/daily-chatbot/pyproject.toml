@@ -15,6 +15,9 @@ elixir-ai = { path = "../../..", develop = true }
 twilio = "^9.1.1"
 pipecat-ai = {extras = ["daily", "openai", "silero"], version = "^0.0.29"}
 
+[tool.poetry.group.dev.dependencies]
+pinecone-client = "^4.1.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

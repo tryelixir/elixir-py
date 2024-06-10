@@ -22,6 +22,10 @@ cd elixir-py
 poetry install
 ```
 
+## Setup
+
+If using VSCode, install the `Flake8` and `Black Formatter` extensions.
+
 ## Tests
 
 ```bash
@@ -60,7 +64,3 @@ poetry publish
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
-
-```
-
-```
