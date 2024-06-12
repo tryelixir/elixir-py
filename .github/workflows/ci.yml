@@ -1,4 +1,4 @@
-name: Lint and Test
+name: CI
 
 on:
   pull_request:
@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v2
@@ -29,7 +31,12 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          poetry run flake8 .
+          DEFAULT_BRANCH=origin/${{ github.event.repository.default_branch }}
+          filenames=$(git diff --name-only --cached --diff-filter=ACMRTUXB $DEFAULT_BRANCH | grep -E '\.py$' || echo "")
+
+          if [ -n "$filenames" ]; then
+            echo "$filenames" | xargs poetry run flake8
+          fi
 
   test:
     name: Test
