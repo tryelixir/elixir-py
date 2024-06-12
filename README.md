@@ -38,6 +38,12 @@ poetry run pytest tests
 poetry run flake8 .
 ```
 
+## Formatting
+
+```bash
+poetry run black .
+```
+
 ## Publishing
 
 ### Test
