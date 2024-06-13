@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "elixir-ai"
-version = "0.1.0"
+version = "0.1.0-alpha"
 description = ""
 authors = ["Andrew Chang <andrew@acalabs.xyz>"]
 readme = "README.md"
