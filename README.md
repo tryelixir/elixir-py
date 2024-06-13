@@ -7,7 +7,7 @@ Python SDK for the Elixir API
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/acalabs-xyz/elixir-py
+git clone https://github.com/tryelixir/elixir-py
 ```
 
 2. Navigate to the project directory:
@@ -42,29 +42,6 @@ poetry run flake8 .
 
 ```bash
 poetry run black .
-```
-
-## Publishing
-
-### Test
-
-```bash
-# One-time config
-poetry config repositories.testpypi https://test.pypi.org/legacy/
-poetry config pypi-token.testpypi your-api-token
-
-poetry build
-poetry publish -r testpypi
-```
-
-### Production
-
-```bash
-# One-time config
-poetry config pypi-token.pypi your-api-token
-
-poetry build
-poetry publish
 ```
 
 ## License
