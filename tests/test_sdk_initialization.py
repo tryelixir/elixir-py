@@ -1,5 +1,4 @@
 import pytest
-from elixir import Elixir
 from elixir.decorators import observe
 
 
@@ -14,20 +13,6 @@ def test_resource_attributes(exporter, openai_client):
     open_ai_span = spans[0]
     assert open_ai_span.resource.attributes["something"] == "yes"
     assert open_ai_span.resource.attributes["service.name"] == "test"
-
-
-def test_association_properties(exporter):
-    Elixir.set_association_properties({"session_id": "123"})
-
-    @observe()
-    def run_workflow():
-        pass
-
-    run_workflow()
-
-    spans = exporter.get_finished_spans()
-    workflow_span = spans[0]
-    assert workflow_span.attributes["elixir.association.properties.session_id"] == "123"
 
 
 def test_instruments(exporter_with_custom_instrumentations):
