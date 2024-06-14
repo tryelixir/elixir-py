@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -74,6 +75,22 @@ class Elixir:
             )
 
             Elixir.__metrics_wrapper = MetricsWrapper(reader=_test_metrics_reader)
+
+    def identify(user_id: str, user_properties: Optional[dict] = None) -> None:
+        association_properties = {"user_id": user_id}
+        if user_properties:
+            association_properties["user_properties"] = json.dumps(user_properties)
+        set_association_properties(association_properties)
+
+    def init_session(
+        session_id: str, session_properties: Optional[dict] = None
+    ) -> None:
+        association_properties = {"session_id": session_id}
+        if session_properties:
+            association_properties["session_properties"] = json.dumps(
+                session_properties
+            )
+        set_association_properties(association_properties)
 
     def set_association_properties(properties: dict) -> None:
         set_association_properties(properties)
