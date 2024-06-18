@@ -2401,13 +2401,13 @@ files = [
 
 [[package]]
 name = "pipecat-ai"
-version = "0.0.29"
+version = "0.0.31"
 description = "An open source framework for voice (and multimodal) assistants"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pipecat_ai-0.0.29-py3-none-any.whl", hash = "sha256:f0040c47d2f1a9dffb76b7b75c0b927d9a0adc9d35faca7680f4ca44e2464655"},
-    {file = "pipecat_ai-0.0.29.tar.gz", hash = "sha256:ad4206229bf361c8acd05a35ef081b3e7ee46e2569fd7c327720b5e7b62ff429"},
+    {file = "pipecat_ai-0.0.31-py3-none-any.whl", hash = "sha256:759ffe0840cb94301a2b361956b2d7e0d3184e967169e76c782f26392f3515f0"},
+    {file = "pipecat_ai-0.0.31.tar.gz", hash = "sha256:c530f1ef0ab072cd9bb35e4c37a05b44a3e8a0c94c473523be1a064fe44e8762"},
 ]
 
 [package.dependencies]
@@ -2428,6 +2428,7 @@ anthropic = ["anthropic (>=0.25.7,<0.26.0)"]
 azure = ["azure-cognitiveservices-speech (>=1.37.0,<1.38.0)"]
 cartesia = ["cartesia", "numpy (>=1.26.0,<1.27.0)", "sounddevice"]
 daily = ["daily-python (>=0.9.0,<0.10.0)"]
+deepgram = ["deepgram-sdk (>=3.2.7,<3.3.0)"]
 examples = ["flask (>=3.0.3,<3.1.0)", "flask-cors (>=4.0.1,<4.1.0)", "python-dotenv (>=1.0.0,<1.1.0)"]
 fal = ["fal-client (>=0.4.0,<0.5.0)"]
 fireworks = ["openai (>=1.26.0,<1.27.0)"]
@@ -2436,6 +2437,7 @@ langchain = ["langchain (>=0.2.1,<0.3.0)", "langchain-community (>=0.2.1,<0.3.0)
 local = ["pyaudio (>=0.2.0,<0.3.0)"]
 moondream = ["einops (>=0.8.0,<0.9.0)", "timm (>=0.9.16,<0.10.0)", "transformers (>=4.40.2,<4.41.0)"]
 openai = ["openai (>=1.26.0,<1.27.0)"]
+openpipe = ["openpipe (>=4.14.0,<4.15.0)"]
 playht = ["pyht (>=0.0.28,<0.1.0)"]
 silero = ["torch (>=2.3.0,<2.4.0)", "torchaudio (>=2.3.0,<2.4.0)"]
 websocket = ["websockets (>=12.0,<13.0)"]
@@ -4029,4 +4031,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c0e7e85e236e1710a71b643105a00c2422b977cbb16fffd3b958bcb5714b4461"
+content-hash = "18f139a3e0b0515e6535247756d8dafae2cc8a634e2a3f57952798853e0b20f6"

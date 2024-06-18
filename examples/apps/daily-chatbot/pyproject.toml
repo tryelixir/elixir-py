@@ -13,7 +13,7 @@ fastapi = "^0.111.0"
 uvicorn = "^0.30.1"
 elixir-ai = { path = "../../..", develop = true }
 twilio = "^9.1.1"
-pipecat-ai = {extras = ["daily", "openai", "silero"], version = "^0.0.29"}
+pipecat-ai = {extras = ["daily", "openai", "silero"], version = "^0.0.31"}
 
 [tool.poetry.group.dev.dependencies]
 pinecone-client = "^4.1.1"
