@@ -1,4 +1,5 @@
 import asyncio
+from time import time
 import aiohttp
 import os
 import sys
@@ -14,7 +15,6 @@ from pipecat.frames.frames import (
     LLMMessagesFrame,
 )
 from pipecat.services.elevenlabs import ElevenLabsTTSService
-from pipecat.services.openai import OpenAILLMContext
 from pipecat.transports.services.daily import (
     DailyParams,
     DailyTransport,
@@ -28,7 +28,7 @@ from loguru import logger
 
 from dotenv import load_dotenv
 
-from services.pipecat import OpenAILLMService
+from services.pipecat import OpenAILLMContext, OpenAILLMService
 from tools import tools, functions
 
 load_dotenv(override=True)
@@ -86,6 +86,7 @@ async def main(room_url: str, token: str, session_id: str):
             {
                 "role": "system",
                 "content": prompt,
+                "timestamp": time(),
             },
         ]
 
@@ -114,6 +115,7 @@ async def main(room_url: str, token: str, session_id: str):
                 {
                     "role": "system",
                     "content": "Please introduce yourself to the user.",
+                    "timestamp": time(),
                 }
             )
             await task.queue_frame(LLMMessagesFrame(messages))
