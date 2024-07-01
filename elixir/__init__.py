@@ -82,13 +82,13 @@ class Elixir:
             association_properties["user_properties"] = json.dumps(user_properties)
         set_association_properties(association_properties)
 
-    def init_session(
-        session_id: str, session_properties: Optional[dict] = None
+    def init_conversation(
+        conversation_id: str, conversation_properties: Optional[dict] = None
     ) -> None:
-        association_properties = {"session_id": session_id}
-        if session_properties:
-            association_properties["session_properties"] = json.dumps(
-                session_properties
+        association_properties = {"conversation_id": conversation_id}
+        if conversation_properties:
+            association_properties["conversation_properties"] = json.dumps(
+                conversation_properties
             )
         set_association_properties(association_properties)
 
