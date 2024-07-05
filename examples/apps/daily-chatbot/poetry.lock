@@ -2390,7 +2390,10 @@ certifi = ">=2019.11.17"
 pinecone-plugin-interface = ">=0.0.7,<0.0.8"
 tqdm = ">=4.64.1"
 typing-extensions = ">=3.7.4"
-urllib3 = {version = ">=1.26.0", markers = "python_version >= \"3.8\" and python_version < \"3.12\""}
+urllib3 = [
+    {version = ">=1.26.5", markers = "python_version >= \"3.12\" and python_version < \"4.0\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.8\" and python_version < \"3.12\""},
+]
 
 [package.extras]
 grpc = ["googleapis-common-protos (>=1.53.0)", "grpcio (>=1.44.0)", "grpcio (>=1.59.0)", "lz4 (>=3.1.3)", "protobuf (>=4.25,<5.0)", "protoc-gen-openapiv2 (>=0.0.1,<0.0.2)"]
@@ -2546,7 +2549,10 @@ files = [
 [package.dependencies]
 annotated-types = ">=0.4.0"
 pydantic-core = "2.20.1"
-typing-extensions = {version = ">=4.6.1", markers = "python_version < \"3.13\""}
+typing-extensions = [
+    {version = ">=4.12.2", markers = "python_version >= \"3.13\""},
+    {version = ">=4.6.1", markers = "python_version < \"3.13\""},
+]
 
 [package.extras]
 email = ["email-validator (>=2.0.0)"]
@@ -4071,5 +4077,5 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 
 [metadata]
 lock-version = "2.0"
-python-versions = "3.11.8"
-content-hash = "603a0d1fdbf9a0f3990b484d87a53c3b0863d1061714e9c92d7c2380230d78f0"
+python-versions = "^3.11"
+content-hash = "24732c5daf1a034a095c5fe50663ad9336950e0282fc900baa9d1f42d4fe6d81"
