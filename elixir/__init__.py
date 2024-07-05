@@ -41,7 +41,7 @@ class Elixir:
     ) -> None:
         Telemetry()
 
-        api_endpoint = ELIXIR_COLLECTOR_URL
+        api_endpoint = os.getenv("ELIXIR_COLLECTOR_URL") or ELIXIR_COLLECTOR_URL
         api_key = os.getenv("ELIXIR_API_KEY") or api_key
 
         if not is_tracing_enabled():
