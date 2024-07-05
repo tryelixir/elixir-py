@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: elixir-py
+    runtime: python
+    plan: free
+    autoDeploy: false
+    buildCommand: cd examples/apps/daily-chatbot && pip install -U pip setuptools poetry && poetry install && alembic upgrade head
+    startCommand: cd examples/apps/daily-chatbot && python main.py
