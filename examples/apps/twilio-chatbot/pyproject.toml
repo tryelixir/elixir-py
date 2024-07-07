@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "twilio-chatbot"
+version = "0.1.0"
+description = ""
+authors = ["Andrew Chang <andrew@acalabs.xyz>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.111.0"
+uvicorn = "^0.30.1"
+python-dotenv = "^1.0.1"
+loguru = "^0.7.2"
+pipecat-ai = {extras = ["daily", "deepgram", "openai", "silero"], version = "^0.0.36"}
+elixir-ai = { path = "../../..", develop = true }
+pinecone = "^4.0.0"
+twilio = "^9.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
