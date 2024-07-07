@@ -49,11 +49,11 @@ This chatbot is also hooked up to Twilio via [SIP](https://www.twilio.com/docs/v
 Expose the server to the internet via ngrok. Note that this is a persistent ngrok domain that may cause issues if run by multiple people. To avoid collisions, we can spin up Twilio numbers as needed and configure the webhook URL.
 
 ```bash
-ngrok http --domain=implicitly-fond-titmouse.ngrok-free.app 7860
+ngrok http --domain=elixir-py-daily-chatbot.ngrok.app 7860
 ```
 
 The webhook url should be `{YOUR_NGROK_URL}/twilio`.
 
 <img src="resources/twilio.png" height="200px">
 
-Then, call the configured number. `(510) 619-2831` is the default number that has been configured with `implicitly-fond-titmouse.ngrok-free.app`.
+Then, call the configured number. `(314) 690-2639` is the default number that has been configured with `elixir-py-daily-chatbot.ngrok.app`.
