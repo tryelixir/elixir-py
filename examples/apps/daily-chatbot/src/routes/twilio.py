@@ -21,6 +21,7 @@ async def handle_twilio_call(
 
     response = VoiceResponse()
     dial = Dial(
+        timeout=600,
         record="record-from-answer",
         recording_status_callback_method="POST",
         recording_status_callback="/twilio/recording",
