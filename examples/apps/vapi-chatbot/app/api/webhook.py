@@ -54,9 +54,9 @@ async def tool_calls_handler(payload):
     for tool_call in tool_calls:
         function = tool_call.get("function")
         name = function.get("name")
-        parameters = function.get("parameters")
+        arguments = function.get("arguments")
 
-        tool_result = await functions[name](parameters)
+        tool_result = await functions[name](arguments)
         results.append(
             {
                 "toolCallId": tool_call.get("id"),

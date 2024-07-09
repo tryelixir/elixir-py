@@ -45,7 +45,7 @@ def get_pinecone_docs(query: str, top_k: int = 5):
 
 
 async def search_insurance_policies(args):
-    query = args["query"]
+    query = args.get("query")
     documents = get_pinecone_docs(query, top_k=3)
     return {
         "result": documents,

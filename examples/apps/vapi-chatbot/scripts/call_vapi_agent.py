@@ -28,7 +28,7 @@ assistant = {
     "interruptionsEnabled": True,
     "model": {
         "provider": "custom-llm",
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4o",
         "url": f"{SERVER_URL}/api/custom-llm",
         "provider": "custom-llm",
         "maxTokens": 250,
