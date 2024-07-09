@@ -31,6 +31,22 @@ poetry run flask --app ./app/main run --host=0.0.0.0 --port=8000 --debug
 
 This command starts the Flask server on http://127.0.0.1:8000/. You can access the server from your web browser at this address.
 
+## Docker
+
+1. Build the Docker app
+
+   ```bash
+   docker build -t vapi-chatbot -f Dockerfile ../../..
+   ```
+
+2. Run the Docker image
+
+   ```bash
+   docker run -p 8000:8000 --env-file .env vapi-chatbot
+   ```
+
+## Call the Assistant
+
 To expose the server to the internet, use `ngrok`:
 
 ```bash
