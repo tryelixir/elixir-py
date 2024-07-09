@@ -29,7 +29,7 @@ load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
-Elixir.init()
+Elixir.init(disable_batch=True)
 
 prompt = """
 You are a scheduling assistant for a medical clinic. Be concise and keep your introduction brief.

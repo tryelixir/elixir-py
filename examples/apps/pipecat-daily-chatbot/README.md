@@ -49,6 +49,7 @@ This chatbot is also hooked up to Twilio via [SIP](https://www.twilio.com/docs/v
 Expose the server to the internet via ngrok. Note that this is a persistent ngrok domain that may cause issues if run by multiple people. To avoid collisions, we can spin up Twilio numbers as needed and configure the webhook URL.
 
 ```bash
+# Replace with your ngrok domain
 ngrok http --domain=elixir-py-daily-chatbot.ngrok.app 7860
 ```
 

@@ -40,6 +40,7 @@ opentelemetry-instrumentation-replicate = "^0.25.0"
 opentelemetry-instrumentation-vertexai = "^0.25.0"
 opentelemetry-instrumentation-watsonx = "^0.25.0"
 opentelemetry-instrumentation-weaviate = "^0.25.0"
+vapi-python = "^0.1.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
