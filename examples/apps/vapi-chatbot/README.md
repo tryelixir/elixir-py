@@ -37,7 +37,7 @@ To expose the server to the internet, use `ngrok`:
 ngrok http --domain=elixir-py-vapi-chatbot.ngrok.app 8000
 ```
 
-Set the resultant URL in your env file as `SERVER_URL`. Then, run the script to call the Vapi agent:
+Set the resultant URL in your env file as `SERVER_URL`. If not set, the script will hit the production server `https://elixir-chat-app.onrender.com`. Then, run the script to call the Vapi agent:
 
 ```bash
 poetry run python scripts/call_vapi_agent.py
