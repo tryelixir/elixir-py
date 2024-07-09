@@ -43,7 +43,8 @@ poetry install
 
 2. **Start ngrok**:
    In a new terminal, start ngrok to tunnel the local server:
-   ```sh
+   ```bash
+   # Replace with your ngrok domain
    ngrok http --domain=elixir-py-twilio-chatbot.ngrok.app 8765
    ```
 
