@@ -6,7 +6,7 @@ from app.tools import tools
 load_dotenv()
 vapi = Vapi(api_key=os.getenv("VAPI_PUBLIC_KEY"))
 
-SERVER_URL = os.getenv("SERVER_URL") or "https://elixir-chat-app.onrender.com"
+SERVER_URL = os.getenv("SERVER_URL") or "https://elixir-vapi-chatbot.onrender.com"
 
 
 prompt = """
