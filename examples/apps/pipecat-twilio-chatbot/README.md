@@ -48,19 +48,6 @@ poetry install
    ngrok http --domain=elixir-py-twilio-chatbot.ngrok.app 8765
    ```
 
-### Using Docker
-
-1. **Build the Docker image**:
-
-   ```sh
-   docker build -t twilio-chatbot .
-   ```
-
-2. **Run the Docker container**:
-   ```sh
-   docker run -it --rm -p 8765:8765 twilio-chatbot
-   ```
-
 ## Usage
 
 To start a call, simply make a call to your Twilio phone number. The webhook URL will direct the call to your FastAPI application, which will handle it accordingly.
