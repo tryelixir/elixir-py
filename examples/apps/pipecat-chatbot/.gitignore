@@ -159,3 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 runpod.toml
+
+# custom script to recursively upgrade items in requirements.py
+upgrade_requirements.py
+.DS_Store

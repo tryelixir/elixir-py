@@ -3,7 +3,7 @@ from flask import Blueprint, request, Response
 from openai import OpenAI
 from elixir import Elixir
 
-Elixir.init(disable_batch=True)
+Elixir.init()
 
 custom_llm = Blueprint("custom_llm", __name__)
 
