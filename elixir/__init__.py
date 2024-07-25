@@ -8,7 +8,8 @@ from opentelemetry.sdk.resources import SERVICE_NAME
 from opentelemetry.sdk.trace.export import SpanExporter
 from opentelemetry.sdk.metrics.export import MetricReader
 
-from elixir.config.constants import ELIXIR_COLLECTOR_URL
+from elixir.api.requests import post_body_request, post_file_request
+from elixir.config.constants import get_collector_url
 from elixir.metrics.metrics import MetricsWrapper
 from elixir.telemetry import Telemetry
 from elixir.instruments import Instruments
@@ -41,20 +42,23 @@ class Elixir:
     ) -> None:
         Telemetry()
 
-        api_endpoint = os.getenv("ELIXIR_COLLECTOR_URL") or ELIXIR_COLLECTOR_URL
-        api_key = os.getenv("ELIXIR_API_KEY") or api_key
+        Elixir.api_endpoint = get_collector_url()
+        Elixir.api_key = os.getenv("ELIXIR_API_KEY") or api_key
+        Elixir.association_properties = {}
 
         if not is_tracing_enabled():
             print(Fore.YELLOW + "Tracing is disabled" + Fore.RESET)
         else:
             headers = {
                 **(os.getenv("ELIXIR_HEADERS") or headers),
-                "Authorization": f"Bearer {api_key}",
+                "Authorization": f"Bearer {Elixir.api_key}",
             }
 
             # Tracer init
             resource_attributes.update({SERVICE_NAME: app_name})
-            TracerWrapper.set_static_params(resource_attributes, api_endpoint, headers)
+            TracerWrapper.set_static_params(
+                resource_attributes, Elixir.api_endpoint, headers
+            )
             Elixir.__tracer_wrapper = TracerWrapper(
                 disable_batch=disable_batch,
                 should_enrich_metrics=should_enrich_metrics,
@@ -67,11 +71,11 @@ class Elixir:
         else:
             metrics_headers = {
                 **(os.getenv("ELIXIR_METRICS_HEADERS") or metrics_headers or headers),
-                "Authorization": f"Bearer {api_key}",
+                "Authorization": f"Bearer {Elixir.api_key}",
             }
 
             MetricsWrapper.set_static_params(
-                resource_attributes, api_endpoint, metrics_headers
+                resource_attributes, Elixir.api_endpoint, metrics_headers
             )
 
             Elixir.__metrics_wrapper = MetricsWrapper(reader=_test_metrics_reader)
@@ -80,7 +84,7 @@ class Elixir:
         association_properties = {"user_id": user_id}
         if user_properties:
             association_properties["user_properties"] = json.dumps(user_properties)
-        set_association_properties(association_properties)
+        Elixir.set_association_properties(association_properties)
 
     def init_conversation(
         conversation_id: str, conversation_properties: Optional[dict] = None
@@ -90,7 +94,35 @@ class Elixir:
             association_properties["conversation_properties"] = json.dumps(
                 conversation_properties
             )
-        set_association_properties(association_properties)
+        Elixir.set_association_properties(association_properties)
 
     def set_association_properties(properties: dict) -> None:
-        set_association_properties(properties)
+        Elixir.association_properties = Elixir.association_properties | properties
+        set_association_properties(Elixir.association_properties)
+
+    async def upload_audio(
+        conversation_id: str,
+        audio_url: Optional[str] = None,
+        audio_buffer: Optional[bytes] = None,
+        audio_content_type: Optional[str] = None,
+    ) -> None:
+        if audio_buffer and audio_content_type:
+            return await post_file_request(
+                endpoint="/ingestion/audio-file",
+                api_key=Elixir.api_key,
+                body={"conversation_id": conversation_id},
+                file_content=audio_buffer,
+                content_type=audio_content_type,
+            )
+
+        if audio_url:
+            return await post_body_request(
+                endpoint="/ingestion/audio-url",
+                api_key=Elixir.api_key,
+                body={
+                    "audio_url": audio_url,
+                    "conversation_id": conversation_id,
+                },
+            )
+
+        raise ValueError("Either audio_url or audio_buffer must be provided")

@@ -36,6 +36,7 @@ assistant = {
         "tools": tools,
     },
     "serverUrl": f"{SERVER_URL}/api/webhook",
+    "recordingEnabled": True,
 }
 
 if __name__ == "__main__":

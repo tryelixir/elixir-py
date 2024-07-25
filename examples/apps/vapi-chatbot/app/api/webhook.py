@@ -1,7 +1,11 @@
+import logging
+from elixir import Elixir
 from flask import Blueprint, request, jsonify
 from app.tools import functions
 
 webhook = Blueprint("webhook", __name__)
+
+log = logging.getLogger(__name__)
 
 
 @webhook.route("/", methods=["POST"])
@@ -83,7 +87,11 @@ async def end_of_call_report_handler(payload):
     Handle Business logic here.
     You can store the information like summary, typescript, recordingUrl or even the full messages list in the database.
     """
-    return
+    recording_url = payload.get("stereoRecordingUrl")
+    call_id = payload.get("call").get("id")
+    if recording_url:
+        log.info(f"Conversation ID: {call_id}, recording URL: {recording_url}")
+        await Elixir.upload_audio(conversation_id=call_id, audio_url=recording_url)
 
 
 async def speech_update_handler(payload):

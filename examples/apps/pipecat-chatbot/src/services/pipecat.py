@@ -11,5 +11,5 @@ class OpenAILLMService(BaseOpenAILLMService):
 
     def process_frame(self, frame: Frame, direction: FrameDirection):
         Elixir.init_conversation(self.session_id)
-        # Elixir.identify("test-user", {"name": "Test User"})
+        Elixir.identify("test-user", {"name": "Test User"})
         return super().process_frame(frame, direction)

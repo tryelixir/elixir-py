@@ -93,3 +93,22 @@ def test_association_properties(exporter):
     spans = exporter.get_finished_spans()
     workflow_span = spans[0]
     assert workflow_span.attributes["elixir.association.properties.test"] == "123"
+
+
+def test_association_properties_with_user_and_conversation(exporter):
+    Elixir.identify("user1")
+    Elixir.init_conversation("conversation1")
+
+    @observe()
+    def run_workflow():
+        pass
+
+    run_workflow()
+
+    spans = exporter.get_finished_spans()
+    workflow_span = spans[0]
+    assert workflow_span.attributes["elixir.association.properties.user_id"] == "user1"
+    assert (
+        workflow_span.attributes["elixir.association.properties.conversation_id"]
+        == "conversation1"
+    )
