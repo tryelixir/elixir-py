@@ -37,7 +37,7 @@ logger.add(sys.stderr, level="DEBUG")
 
 twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-twilioclient = Client(twilio_account_sid, twilio_auth_token)
+twilio_client = Client(twilio_account_sid, twilio_auth_token)
 
 daily_api_key = os.getenv("DAILY_API_KEY", "")
 
@@ -132,14 +132,14 @@ async def main(room_url: str, token: str, callId: str, sipUri: str):
                 response = VoiceResponse()
                 dial = Dial(
                     record="record-from-answer",
-                    # recording_status_callback_method="POST",
-                    # recording_status_callback="/twilio/recording",
+                    recording_status_callback_method="POST",
+                    recording_status_callback=f"{os.getenv("SERVER_URL")}/twilio_recording",
                 )
                 dial.sip(sipUri)
                 response.append(dial)
 
                 # The TwiML is updated using Twilio's client library
-                twilioclient.calls(callId).update(twiml=str(response))
+                twilio_client.calls(callId).update(twiml=str(response))
             except Exception as e:
                 raise Exception(f"Failed to forward call: {str(e)}")
 

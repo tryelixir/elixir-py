@@ -20,12 +20,16 @@ from pipecat.transports.services.helpers.daily_rest import (
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+import aiohttp
 from twilio.twiml.voice_response import VoiceResponse
+from twilio.rest import Client
 
 from dotenv import load_dotenv
+from elixir import Elixir
 
 load_dotenv(override=True)
 
+Elixir.init()
 
 # ------------ Configuration ------------ #
 
@@ -41,6 +45,11 @@ daily_rest_helper = DailyRESTHelper(
     os.getenv("DAILY_API_KEY", ""),
     os.getenv("DAILY_API_URL", "https://api.daily.co/v1"),
 )
+
+
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 
 # ----------------- API ----------------- #
@@ -157,6 +166,51 @@ async def twilio_start_bot(request: Request):
         loop=10,
     )
     return str(resp)
+
+
+@app.post("/twilio_recording", response_class=PlainTextResponse)
+async def twilio_recording(request: Request):
+    print("POST /twilio_recording")
+
+    data = {}
+    try:
+        # shouldnt have received json, twilio sends form data
+        form_data = await request.form()
+        data = dict(form_data)
+    except Exception:
+        pass
+
+    callId = data.get("CallSid")
+    recordingUrl = data.get("RecordingUrl")
+
+    if not callId or not recordingUrl:
+        raise HTTPException(
+            status_code=500, detail="Missing 'CallSid' or 'RecordingUrl' in request"
+        )
+
+    # Download the recording from Twilio
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"{recordingUrl}.mp3?RequestedChannels=2",
+            auth=aiohttp.BasicAuth(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN),
+        ) as response:
+            if response.status == 200:
+                recording_content = await response.read()
+                content_type = response.headers.get("Content-Type")
+
+                print(
+                    f"Recording content: {content_type}, {len(recording_content)} bytes"
+                )
+
+                await Elixir.upload_audio(
+                    conversation_id=callId,
+                    audio_buffer=recording_content,
+                    audio_content_type=content_type,
+                )
+            else:
+                raise HTTPException(
+                    status_code=500, detail="Failed to download recording from Twilio"
+                )
 
 
 # ----------------- Main ----------------- #

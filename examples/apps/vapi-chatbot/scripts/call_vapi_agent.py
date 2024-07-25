@@ -1,3 +1,4 @@
+import time
 from vapi_python import Vapi
 import os
 from dotenv import load_dotenv
@@ -36,10 +37,14 @@ assistant = {
         "tools": tools,
     },
     "serverUrl": f"{SERVER_URL}/api/webhook",
+    "recordingEnabled": True,
 }
 
 if __name__ == "__main__":
+    vapi.start(assistant=assistant)
     try:
-        vapi.start(assistant=assistant)
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
+        print("Exiting...")
         vapi.stop()
