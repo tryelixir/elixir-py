@@ -188,7 +188,6 @@ async def twilio_recording(request: Request):
             status_code=500, detail="Missing 'CallSid' or 'RecordingUrl' in request"
         )
 
-    print(f"Recording URL: {recordingUrl}")
     # Download the recording from Twilio
     async with aiohttp.ClientSession() as session:
         async with session.get(
