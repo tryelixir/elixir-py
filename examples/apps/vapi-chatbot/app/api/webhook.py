@@ -1,3 +1,4 @@
+import json
 import logging
 from elixir import Elixir
 from flask import Blueprint, request, jsonify
@@ -10,10 +11,11 @@ log = logging.getLogger(__name__)
 
 @webhook.route("/", methods=["POST"])
 async def webhook_route():
-    # Add your logic here
-
     request_data = request.get_json()
     payload = request_data.get("message")
+
+    Elixir.init_conversation(payload["call"]["id"])
+    Elixir.identify("test-user", {"name": "Test User"})
 
     if payload["type"] == "tool-calls":
         response = await tool_calls_handler(payload)
@@ -64,7 +66,7 @@ async def tool_calls_handler(payload):
         results.append(
             {
                 "toolCallId": tool_call.get("id"),
-                "result": tool_result,
+                "result": json.dumps(tool_result),
             }
         )
 

@@ -14,8 +14,8 @@ requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 loguru = "^0.7.2"
 twilio = "^9.2.3"
-pinecone = "^4.0.0"
 elixir-ai = { path = "../../..", develop = true }
+pinecone-client = "4.1.2"
 
 
 [build-system]
