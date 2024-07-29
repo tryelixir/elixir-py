@@ -15,7 +15,7 @@ async def post_body_request(endpoint: str, api_key: str, body: Optional[dict] = 
             headers=headers,
             json=body,
         ) as response:
-            return await response.json()
+            return response
 
 
 async def post_file_request(
@@ -45,4 +45,4 @@ async def post_file_request(
             headers=headers,
             data=data,
         ) as response:
-            return await response.json()
+            return response

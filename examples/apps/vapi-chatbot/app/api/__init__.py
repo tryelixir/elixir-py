@@ -1,6 +1,9 @@
 from flask import Blueprint
 from .custom_llm import custom_llm
 from .webhook import webhook
+from elixir import Elixir
+
+Elixir.init()
 
 api = Blueprint("api", __name__)
 
