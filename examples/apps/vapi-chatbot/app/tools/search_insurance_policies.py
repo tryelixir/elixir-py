@@ -4,7 +4,7 @@ import os
 from openai.types.chat import ChatCompletionToolParam
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 index_name = "insurance-embeddings"
