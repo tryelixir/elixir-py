@@ -29,7 +29,7 @@ from loguru import logger
 
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")

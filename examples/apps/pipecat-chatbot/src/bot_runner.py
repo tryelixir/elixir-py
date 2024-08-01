@@ -27,7 +27,7 @@ from twilio.rest import Client
 from dotenv import load_dotenv
 from elixir import Elixir
 
-load_dotenv(override=True)
+load_dotenv()
 
 Elixir.init()
 
