@@ -26,7 +26,9 @@ def openai_client():
 @pytest.fixture(autouse=True)
 def environment():
     if "OPENAI_API_KEY" not in os.environ:
-        os.environ["OPENAI_API_KEY"] = "test_api_key"
+        os.environ["OPENAI_API_KEY"] = "openai_api_key"
+    if "ELIXIR_API_KEY" not in os.environ:
+        os.environ["ELIXIR_API_KEY"] = "elixir_api_key"
 
 
 @pytest.fixture(scope="module")
