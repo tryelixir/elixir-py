@@ -50,7 +50,7 @@ This command starts the Flask server on http://127.0.0.1:8000/. You can access t
 To expose the server to the internet, use `ngrok`:
 
 ```bash
-ngrok http --domain=elixir-py-vapi-chatbot.ngrok.app 8000
+ngrok http --domain=YOUR_DOMAIN 8000
 ```
 
 Set the resultant URL in your env file as `SERVER_URL`. If not set, the script will hit the production server `https://elixir-vapi-chatbot.onrender.com`. Then, run the script to call the Vapi agent:
