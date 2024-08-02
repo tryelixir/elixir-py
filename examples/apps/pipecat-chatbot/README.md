@@ -36,10 +36,12 @@ Target the following URL:
 Expose the server to the internet via ngrok. Note that this is a persistent ngrok domain that may cause issues if run by multiple people. To avoid collisions, we can spin up Twilio numbers as needed and configure the webhook URL.
 
 ```bash
-# Replace with your ngrok domain
-ngrok http --domain=elixir-py-pipecat-chatbot.ngrok.app 7860
+ngrok http --domain=YOUR_DOMAIN 7860
 ```
 
 The webhook url should be `{YOUR_NGROK_URL}/twilio`.
 
-Then, call the configured number. `(510) 619 2831` is the default number that has been configured with `elixir-py-pipecat-chatbot.ngrok.app`.
+Then, call the configured number. We've set up a Twilio bot with the following settings:
+
+- Number: `(510) 619 2831`
+- Ngrok Domain: `elixir-py-pipecat-chatbot.ngrok.app`
