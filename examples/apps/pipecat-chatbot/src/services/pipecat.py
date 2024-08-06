@@ -10,6 +10,6 @@ class OpenAILLMService(BaseOpenAILLMService):
         self.session_id = session_id
 
     def process_frame(self, frame: Frame, direction: FrameDirection):
-        Elixir.init_conversation(self.session_id)
-        Elixir.identify("test-user", {"name": "Test User"})
+        Elixir.track_conversation(self.session_id)
+        Elixir.track_user("test-user", {"name": "Test User"})
         return super().process_frame(frame, direction)

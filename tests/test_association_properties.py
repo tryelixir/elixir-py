@@ -4,7 +4,7 @@ from elixir.decorators import observe
 
 
 def test_user_without_traits(exporter):
-    Elixir.identify("user1")
+    Elixir.track_user("user1")
 
     @observe()
     def run_workflow():
@@ -22,7 +22,7 @@ def test_user_without_traits(exporter):
 
 
 def test_user_with_traits(exporter):
-    Elixir.identify("user1", {"name": "John Doe"})
+    Elixir.track_user("user1", {"name": "John Doe"})
 
     @observe()
     def run_workflow():
@@ -39,7 +39,7 @@ def test_user_with_traits(exporter):
 
 
 def test_conversation_without_traits(exporter):
-    Elixir.init_conversation("conversation1")
+    Elixir.track_conversation("conversation1")
 
     @observe()
     def run_workflow():
@@ -62,7 +62,7 @@ def test_conversation_without_traits(exporter):
 
 
 def test_conversation_with_traits(exporter):
-    Elixir.init_conversation("conversation1", {"type": "sales_call"})
+    Elixir.track_conversation("conversation1", {"type": "sales_call"})
 
     @observe()
     def run_workflow():
@@ -96,8 +96,8 @@ def test_association_properties(exporter):
 
 
 def test_association_properties_with_user_and_conversation(exporter):
-    Elixir.identify("user1")
-    Elixir.init_conversation("conversation1")
+    Elixir.track_user("user1")
+    Elixir.track_conversation("conversation1")
 
     @observe()
     def run_workflow():

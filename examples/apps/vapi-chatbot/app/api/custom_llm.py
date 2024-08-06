@@ -24,8 +24,8 @@ def generate_streaming_response(data):
 @custom_llm.route("/chat/completions", methods=["POST"])
 def custom_llm_openai_sse_handler():
     request_data = request.get_json()
-    Elixir.init_conversation(request_data["call"]["id"])
-    Elixir.identify("test-user", {"name": "Test User"})
+    Elixir.track_conversation(request_data["call"]["id"])
+    Elixir.track_user("test-user", {"name": "Test User"})
 
     chat_request_data = {
         "model": request_data["model"],

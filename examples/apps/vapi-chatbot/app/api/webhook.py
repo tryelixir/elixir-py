@@ -14,8 +14,8 @@ async def webhook_route():
     request_data = request.get_json()
     payload = request_data.get("message")
 
-    Elixir.init_conversation(payload["call"]["id"])
-    Elixir.identify("test-user", {"name": "Test User"})
+    Elixir.track_conversation(payload["call"]["id"])
+    Elixir.track_user("test-user", {"name": "Test User"})
 
     if payload["type"] == "tool-calls":
         response = await tool_calls_handler(payload)
