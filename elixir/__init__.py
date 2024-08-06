@@ -80,13 +80,13 @@ class Elixir:
 
             Elixir.__metrics_wrapper = MetricsWrapper(reader=_test_metrics_reader)
 
-    def identify(user_id: str, user_properties: Optional[dict] = None) -> None:
+    def track_user(user_id: str, user_properties: Optional[dict] = None) -> None:
         association_properties = {"user_id": user_id}
         if user_properties:
             association_properties["user_properties"] = json.dumps(user_properties)
         Elixir.set_association_properties(association_properties)
 
-    def init_conversation(
+    def track_conversation(
         conversation_id: str, conversation_properties: Optional[dict] = None
     ) -> None:
         association_properties = {"conversation_id": conversation_id}
